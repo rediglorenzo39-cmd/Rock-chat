@@ -22,64 +22,64 @@
         }
     </style>
 </head>
-<body class="bg-zinc-950 text-zinc-100 min-h-screen flex flex-col font-sans select-none">
+<body class="bg-white text-zinc-900 min-h-screen flex flex-col font-sans select-none">
 
     <!-- ELEMENTO DE ÁUDIO PARA O RINGTONE DE CHAMADA -->
     <audio id="ringtoneAudio" preload="auto" loop src="https://actions.google.com/sounds/v1/alarms/digital_watch_alarm_long.ogg"></audio>
 
     <!-- TELA DE LOGIN / CADASTRO -->
-    <div id="auth-screen" class="fixed inset-0 bg-zinc-950 z-50 flex items-center justify-center p-4">
-        <div class="bg-zinc-900 border border-zinc-800 rounded-3xl p-8 w-full max-w-md shadow-2xl">
+    <div id="auth-screen" class="fixed inset-0 bg-white z-50 flex items-center justify-center p-4">
+        <div class="bg-white border border-zinc-200 rounded-3xl p-8 w-full max-w-md shadow-xl">
             <div class="text-center mb-6">
-                <h1 class="text-3xl font-black tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-indigo-500">ROCK CHAT</h1>
-                <p class="text-zinc-400 text-sm mt-1">Entre ou cadastre-se para conversar.</p>
+                <h1 class="text-3xl font-black tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">ROCK CHAT</h1>
+                <p class="text-zinc-500 text-sm mt-1">Entre ou cadastre-se para conversar.</p>
             </div>
             
             <div class="space-y-4">
                 <div>
-                    <label class="block text-xs font-semibold text-zinc-400 mb-1">NOME DE USUÁRIO</label>
-                    <input type="text" id="input-username" placeholder="Seu nome" class="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500 transition">
+                    <label class="block text-xs font-semibold text-zinc-500 mb-1">NOME DE USUÁRIO</label>
+                    <input type="text" id="input-username" placeholder="Seu nome" class="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 text-zinc-900 focus:outline-none focus:border-blue-600 transition">
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-zinc-400 mb-1">SENHA</label>
-                    <input type="password" id="input-password" placeholder="Sua senha" class="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500 transition">
+                    <label class="block text-xs font-semibold text-zinc-500 mb-1">SENHA</label>
+                    <input type="password" id="input-password" placeholder="Sua senha" class="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 text-zinc-900 focus:outline-none focus:border-blue-600 transition">
                 </div>
                 
                 <div class="flex gap-3 pt-2">
                     <button id="btn-login" class="flex-1 bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl transition shadow-lg shadow-blue-600/30">Entrar</button>
-                    <button id="btn-register" class="flex-1 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-bold py-3 rounded-xl transition">Cadastrar</button>
+                    <button id="btn-register" class="flex-1 bg-zinc-100 hover:bg-zinc-200 text-zinc-800 font-bold py-3 rounded-xl transition">Cadastrar</button>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- APLICATIVO PRINCIPAL -->
-    <div id="app-screen" class="hidden flex-1 flex flex-col max-w-2xl mx-auto w-full border-x border-zinc-900 bg-zinc-950">
+    <div id="app-screen" class="hidden flex-1 flex flex-col max-w-2xl mx-auto w-full border-x border-zinc-200 bg-white">
         
         <!-- Cabeçalho -->
-        <header class="sticky top-0 bg-zinc-950/80 backdrop-blur-md border-b border-zinc-900 p-4 flex justify-between items-center z-40">
+        <header class="sticky top-0 bg-white/80 backdrop-blur-md border-b border-zinc-200 p-4 flex justify-between items-center z-40">
             <div class="flex items-center gap-3">
-                <div id="header-avatar" class="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center font-bold text-blue-400 border border-zinc-700">?</div>
+                <div id="header-avatar" class="w-10 h-10 rounded-full bg-zinc-100 flex items-center justify-center font-bold text-blue-600 border border-zinc-200">?</div>
                 <div>
                     <h2 id="header-username" class="font-bold text-sm leading-tight flex items-center gap-1">Carregando...</h2>
-                    <span class="text-xs text-emerald-500 flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Online</span>
+                    <span class="text-xs text-emerald-600 flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Online</span>
                 </div>
             </div>
             <div class="flex items-center gap-2">
-                <button id="btn-loja-selo" class="bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 px-3 py-1.5 rounded-xl text-xs font-medium text-blue-400 flex items-center gap-1 transition">
+                <button id="btn-loja-selo" class="bg-zinc-50 hover:bg-zinc-100 border border-zinc-200 px-3 py-1.5 rounded-xl text-xs font-medium text-blue-600 flex items-center gap-1 transition">
                     <i class="fa-solid fa-certificate"></i> Selo Verificado
                 </button>
-                <button id="btn-logout" class="bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 p-2 rounded-xl text-zinc-400 hover:text-red-400 transition">
+                <button id="btn-logout" class="bg-zinc-50 hover:bg-zinc-100 border border-zinc-200 p-2 rounded-xl text-zinc-500 hover:text-red-500 transition">
                     <i class="fa-solid fa-right-from-bracket"></i>
                 </button>
             </div>
         </header>
 
         <!-- Navegação de Abas -->
-        <nav class="grid grid-cols-3 border-b border-zinc-900 text-center font-medium text-sm">
-            <button data-tab="feed" class="tab-btn py-3 text-blue-500 border-b-2 border-blue-500 transition">Feed</button>
-            <button data-tab="foryou" class="tab-btn py-3 text-zinc-400 hover:text-zinc-200 transition">For You</button>
-            <button data-tab="chamadas" class="tab-btn py-3 text-zinc-400 hover:text-zinc-200 transition flex items-center justify-center gap-1">
+        <nav class="grid grid-cols-3 border-b border-zinc-200 text-center font-medium text-sm">
+            <button data-tab="feed" class="tab-btn py-3 text-blue-600 border-b-2 border-blue-600 transition">Feed</button>
+            <button data-tab="foryou" class="tab-btn py-3 text-zinc-500 hover:text-zinc-800 transition">For You</button>
+            <button data-tab="chamadas" class="tab-btn py-3 text-zinc-500 hover:text-zinc-800 transition flex items-center justify-center gap-1">
                 <i class="fa-solid fa-phone"></i> Chamadas
             </button>
         </nav>
@@ -89,15 +89,15 @@
             
             <!-- ABA FEED -->
             <section id="tab-feed" class="space-y-4">
-                <div class="bg-zinc-900/50 border border-zinc-800/80 rounded-2xl p-4">
-                    <textarea id="post-text" placeholder="No que você está pensando?" rows="3" class="w-full bg-transparent resize-none focus:outline-none text-zinc-100 placeholder-zinc-500 text-sm"></textarea>
+                <div class="bg-zinc-50 border border-zinc-200 rounded-2xl p-4">
+                    <textarea id="post-text" placeholder="No que você está pensando?" rows="3" class="w-full bg-transparent resize-none focus:outline-none text-zinc-900 placeholder-zinc-400 text-sm"></textarea>
                     
                     <div id="post-preview-container" class="hidden relative mb-3 rounded-xl overflow-hidden bg-black max-h-60 flex items-center justify-center"></div>
 
-                    <div class="flex justify-between items-center pt-3 border-t border-zinc-800/60">
+                    <div class="flex justify-between items-center pt-3 border-t border-zinc-200">
                         <div class="flex gap-2">
-                            <label class="cursor-pointer bg-zinc-800 hover:bg-zinc-700 text-zinc-300 px-3 py-1.5 rounded-xl text-xs font-medium transition flex items-center gap-1.5">
-                                <i class="fa-solid fa-image text-blue-400"></i> Mídia
+                            <label class="cursor-pointer bg-white hover:bg-zinc-100 text-zinc-700 border border-zinc-200 px-3 py-1.5 rounded-xl text-xs font-medium transition flex items-center gap-1.5">
+                                <i class="fa-solid fa-image text-blue-600"></i> Mídia
                                 <input type="file" id="post-file" accept="image/*,video/*" class="hidden">
                             </label>
                         </div>
@@ -110,20 +110,20 @@
 
             <!-- ABA FOR YOU -->
             <section id="tab-foryou" class="hidden space-y-4">
-                <div class="bg-gradient-to-r from-blue-900/20 to-indigo-900/20 border border-blue-500/20 rounded-2xl p-4 text-center">
-                    <h3 class="font-bold text-blue-400 text-sm"><i class="fa-solid fa-fire"></i> Destaques</h3>
-                    <p class="text-xs text-zinc-400 mt-1">As postagens mais curtidas da comunidade.</p>
+                <div class="bg-blue-50 border border-blue-100 rounded-2xl p-4 text-center">
+                    <h3 class="font-bold text-blue-600 text-sm"><i class="fa-solid fa-fire"></i> Destaques</h3>
+                    <p class="text-xs text-zinc-500 mt-1">As postagens mais curtidas da comunidade.</p>
                 </div>
                 <div id="foryou-container" class="space-y-4"></div>
             </section>
 
             <!-- ABA CHAMADAS -->
             <section id="tab-chamadas" class="hidden space-y-4">
-                <div class="bg-zinc-900/50 border border-zinc-800 rounded-2xl p-4">
-                    <h3 class="font-bold text-sm mb-2"><i class="fa-solid fa-phone text-blue-500"></i> Iniciar Chamada</h3>
-                    <p class="text-xs text-zinc-400 mb-4">Digite o nome de usuário exato para realizar uma ligação.</p>
+                <div class="bg-zinc-50 border border-zinc-200 rounded-2xl p-4">
+                    <h3 class="font-bold text-sm mb-2"><i class="fa-solid fa-phone text-blue-600"></i> Iniciar Chamada</h3>
+                    <p class="text-xs text-zinc-500 mb-4">Digite o nome de usuário exato para realizar uma ligação.</p>
                     <div class="flex gap-2">
-                        <input type="text" id="target-username-call" placeholder="Nome do usuário" class="flex-1 bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500">
+                        <input type="text" id="target-username-call" placeholder="Nome do usuário" class="flex-1 bg-white border border-zinc-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-600 text-zinc-900">
                         <button id="btn-start-call" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-4 py-2.5 rounded-xl text-sm transition flex items-center gap-2">
                             <i class="fa-solid fa-phone"></i> Ligar
                         </button>
@@ -135,32 +135,32 @@
     </div>
 
     <!-- MODAL DE LOJA DE SELO VERIFICADO -->
-    <div id="modal-selo" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-        <div class="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 w-full max-w-md relative">
-            <button id="close-modal-selo" class="absolute top-4 right-4 text-zinc-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+    <div id="modal-selo" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white border border-zinc-200 rounded-3xl p-6 w-full max-w-md relative shadow-2xl">
+            <button id="close-modal-selo" class="absolute top-4 right-4 text-zinc-400 hover:text-zinc-700"><i class="fa-solid fa-xmark text-lg"></i></button>
             <div class="text-center mb-6">
-                <div class="inline-flex p-3 bg-blue-500/10 border border-blue-500/30 rounded-2xl text-blue-400 text-2xl mb-2">
+                <div class="inline-flex p-3 bg-blue-50 border border-blue-100 rounded-2xl text-blue-600 text-2xl mb-2">
                     <i class="fa-solid fa-certificate"></i>
                 </div>
-                <h3 class="text-xl font-bold">Selo Verificado</h3>
-                <p class="text-xs text-zinc-400 mt-1">Destaque seu perfil com a borda brilhante e o selo oficial.</p>
+                <h3 class="text-xl font-bold text-zinc-900">Selo Verificado</h3>
+                <p class="text-xs text-zinc-500 mt-1">Destaque seu perfil com a borda brilhante e o selo oficial.</p>
             </div>
             <div class="space-y-3">
-                <input type="text" id="input-pix-id" placeholder="Cole o ID do Pix" class="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500">
+                <input type="text" id="input-pix-id" placeholder="Cole o ID do Pix" class="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-600 text-zinc-900">
                 <button id="btn-enviar-pix" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl transition text-sm">Enviar Comprovante</button>
             </div>
         </div>
     </div>
 
     <!-- MODAL DE CHAMADA RECEBIDA -->
-    <div id="modal-chamada-recebida" class="hidden fixed inset-0 bg-black/80 z-[99999] flex items-center justify-center p-4">
-        <div class="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 w-full max-w-sm text-center space-y-4 shadow-2xl">
-            <div class="w-20 h-20 bg-blue-500/20 border border-blue-500 text-blue-400 rounded-full flex items-center justify-center text-3xl mx-auto animate-pulse">
+    <div id="modal-chamada-recebida" class="hidden fixed inset-0 bg-black/60 z-[99999] flex items-center justify-center p-4">
+        <div class="bg-white border border-zinc-200 rounded-3xl p-6 w-full max-w-sm text-center space-y-4 shadow-2xl">
+            <div class="w-20 h-20 bg-blue-50 border border-blue-200 text-blue-600 rounded-full flex items-center justify-center text-3xl mx-auto animate-pulse">
                 <i class="fa-solid fa-phone-volume"></i>
             </div>
             <div>
-                <h3 id="texto-chamada-recebida" class="text-lg font-bold">Chamada de Alguém</h3>
-                <p class="text-xs text-zinc-400 mt-1">Toque para aceitar ou recusar</p>
+                <h3 id="texto-chamada-recebida" class="text-lg font-bold text-zinc-900">Chamada de Alguém</h3>
+                <p class="text-xs text-zinc-500 mt-1">Toque para aceitar ou recusar</p>
             </div>
             <div class="flex gap-3 pt-2">
                 <button id="btn-atender" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl text-sm transition">Atender</button>
@@ -170,16 +170,16 @@
     </div>
 
     <!-- MODAL DE CHAMADA ATIVA -->
-    <div id="modal-chamada-ativa" class="hidden fixed inset-0 bg-zinc-950 z-[999999] flex flex-col items-center justify-between p-6">
+    <div id="modal-chamada-ativa" class="hidden fixed inset-0 bg-white z-[999999] flex flex-col items-center justify-between p-6">
         <div class="text-center pt-10">
-            <h2 id="call-peer-name" class="text-2xl font-bold">Usuário</h2>
-            <p id="call-status-text" class="text-sm text-emerald-400 mt-1">Conectado...</p>
+            <h2 id="call-peer-name" class="text-2xl font-bold text-zinc-900">Usuário</h2>
+            <p id="call-status-text" class="text-sm text-emerald-600 mt-1 font-medium">Conectado...</p>
         </div>
-        <div class="w-full max-w-md bg-zinc-900/40 border border-zinc-800 rounded-2xl flex flex-col h-48 p-3 overflow-hidden">
+        <div class="w-full max-w-md bg-zinc-50 border border-zinc-200 rounded-2xl flex flex-col h-48 p-3 overflow-hidden shadow-inner">
             <div id="call-messages" class="flex-1 overflow-y-auto space-y-2 text-xs mb-2"></div>
             <div class="flex gap-2">
-                <input type="text" id="call-input-msg" placeholder="Digite..." class="flex-1 bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-blue-500">
-                <button id="call-btn-send" class="bg-blue-600 px-3 py-2 rounded-xl text-xs font-bold">Enviar</button>
+                <input type="text" id="call-input-msg" placeholder="Digite..." class="flex-1 bg-white border border-zinc-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-blue-600 text-zinc-900">
+                <button id="call-btn-send" class="bg-blue-600 text-white px-4 py-2 rounded-xl text-xs font-bold">Enviar</button>
             </div>
         </div>
         <div class="pb-10">
@@ -207,7 +207,6 @@
         let currentUser = null;
         let selectedFile = null;
         let activeCallId = null;
-        let activeCallListener = null;
         let incomingCallData = null;
 
         // Desbloqueio universal de autoplay do navegador no primeiro clique
@@ -259,11 +258,11 @@
         document.querySelectorAll('.tab-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 document.querySelectorAll('.tab-btn').forEach(b => {
-                    b.classList.remove('text-blue-500', 'border-b-2', 'border-blue-500');
-                    b.classList.add('text-zinc-400');
+                    b.classList.remove('text-blue-600', 'border-b-2', 'border-blue-600');
+                    b.classList.add('text-zinc-500');
                 });
-                btn.classList.add('text-blue-500', 'border-b-2', 'border-blue-500');
-                btn.classList.remove('text-zinc-400');
+                btn.classList.add('text-blue-600', 'border-b-2', 'border-blue-600');
+                btn.classList.remove('text-zinc-500');
 
                 const targetTab = btn.getAttribute('data-tab');
                 document.getElementById('tab-feed').classList.add('hidden');
@@ -348,23 +347,23 @@
 
         function renderFeed(posts, usersData) {
             const container = document.getElementById('posts-container');
-            container.innerHTML = posts.length === 0 ? `<p class="text-center text-zinc-500 text-xs py-8">Nenhum post.</p>` : '';
+            container.innerHTML = posts.length === 0 ? `<p class="text-center text-zinc-400 text-xs py-8">Nenhum post.</p>` : '';
             posts.forEach(post => {
                 const isVerified = usersData[post.author]?.verified;
                 const isLiked = post.likedBy && post.likedBy[currentUser.username];
                 const card = document.createElement('div');
-                card.className = "bg-zinc-900/50 border border-zinc-800 rounded-2xl p-4 space-y-3";
+                card.className = "bg-zinc-50 border border-zinc-200 rounded-2xl p-4 space-y-3 shadow-sm";
                 card.innerHTML = `
                     <div class="flex items-center justify-between">
                         <div class="flex items-center gap-2">
-                            <div class="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center font-bold text-blue-400 text-xs">${post.author.charAt(0).toUpperCase()}</div>
-                            <span class="font-bold text-sm flex items-center gap-1">${post.author} ${isVerified ? '<span class="verified-badge"><i class="fa-solid fa-circle-check"></i></span>' : ''}</span>
+                            <div class="w-8 h-8 rounded-full bg-zinc-200 flex items-center justify-center font-bold text-blue-600 text-xs">${post.author.charAt(0).toUpperCase()}</div>
+                            <span class="font-bold text-sm flex items-center gap-1 text-zinc-900">${post.author} ${isVerified ? '<span class="verified-badge"><i class="fa-solid fa-circle-check"></i></span>' : ''}</span>
                         </div>
                     </div>
-                    ${post.text ? `<p class="text-sm text-zinc-200">${post.text}</p>` : ''}
+                    ${post.text ? `<p class="text-sm text-zinc-800">${post.text}</p>` : ''}
                     ${post.mediaUrl ? `<div class="rounded-xl overflow-hidden bg-black max-h-80 flex items-center justify-center">${post.mediaType === 'video' ? `<video src="${post.mediaUrl}" controls class="w-full max-h-80 object-cover"></video>` : `<img src="${post.mediaUrl}" class="w-full max-h-80 object-cover">`}</div>` : ''}
-                    <div class="pt-2 border-t border-zinc-800 text-xs">
-                        <button onclick="toggleLike('${post.id}')" class="flex items-center gap-1 ${isLiked ? 'text-red-500 font-bold' : 'text-zinc-400'}">
+                    <div class="pt-2 border-t border-zinc-200 text-xs">
+                        <button onclick="toggleLike('${post.id}')" class="flex items-center gap-1 ${isLiked ? 'text-red-500 font-bold' : 'text-zinc-500'}">
                             <i class="${isLiked ? 'fa-solid' : 'fa-regular'} fa-heart"></i> ${post.likes || 0}
                         </button>
                     </div>
@@ -376,19 +375,19 @@
         function renderForYou(posts, usersData) {
             const container = document.getElementById('foryou-container');
             const sorted = [...posts].sort((a, b) => (b.likes || 0) - (a.likes || 0));
-            container.innerHTML = sorted.length === 0 ? `<p class="text-center text-zinc-500 text-xs py-8">Nenhum destaque.</p>` : '';
+            container.innerHTML = sorted.length === 0 ? `<p class="text-center text-zinc-400 text-xs py-8">Nenhum destaque.</p>` : '';
             sorted.forEach(post => {
                 const isVerified = usersData[post.author]?.verified;
                 const card = document.createElement('div');
-                card.className = "bg-zinc-900/50 border border-zinc-800 rounded-2xl p-4 space-y-3";
+                card.className = "bg-zinc-50 border border-zinc-200 rounded-2xl p-4 space-y-3 shadow-sm";
                 card.innerHTML = `
                     <div class="flex items-center justify-between">
                         <div class="flex items-center gap-2">
-                            <span class="font-bold text-sm">${post.author} ${isVerified ? '<span class="verified-badge"><i class="fa-solid fa-circle-check"></i></span>' : ''}</span>
+                            <span class="font-bold text-sm text-zinc-900">${post.author} ${isVerified ? '<span class="verified-badge"><i class="fa-solid fa-circle-check"></i></span>' : ''}</span>
                         </div>
-                        <span class="text-xs text-blue-400 font-bold"><i class="fa-solid fa-fire"></i> ${post.likes || 0}</span>
+                        <span class="text-xs text-blue-600 font-bold"><i class="fa-solid fa-fire"></i> ${post.likes || 0}</span>
                     </div>
-                    ${post.text ? `<p class="text-sm text-zinc-200">${post.text}</p>` : ''}
+                    ${post.text ? `<p class="text-sm text-zinc-800">${post.text}</p>` : ''}
                 `;
                 container.appendChild(card);
             });
@@ -518,7 +517,7 @@
                 container.innerHTML = '';
                 Object.values(msgs).forEach(m => {
                     const div = document.createElement('div');
-                    div.className = m.sender === currentUser.username ? 'text-right text-blue-400' : 'text-left text-zinc-300';
+                    div.className = m.sender === currentUser.username ? 'text-right text-blue-600 font-medium' : 'text-left text-zinc-700 font-medium';
                     div.innerHTML = `<span class="font-bold">@${m.sender}:</span> ${m.text}`;
                     container.appendChild(div);
                 });
