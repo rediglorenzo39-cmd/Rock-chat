@@ -1,1553 +1,653 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Rock Chat - Sistema Completo com Chamada e Notificação</title>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: Arial, sans-serif; }
-    body { background-color: #f0f0f0; color: #000; display: flex; justify-content: center; padding: 10px; }
-    .container { width: 100%; max-width: 650px; background-color: #fff; border: 2px solid #a0a0a0; padding: 15px; position: relative; }
-    button { background: linear-gradient(to bottom, #fff, #e0e0e0); border: 1px solid #707070; padding: 5px 12px; font-weight: bold; cursor: pointer; }
-    .btn-delete { background: linear-gradient(to bottom, #ffcccc, #ff9999) !important; border-color: #a00000 !important; color: #800000 !important; }
-    .btn-photo { background: linear-gradient(to bottom, #e6f2ff, #cce6ff) !important; border-color: #0066cc !important; font-size: 16px !important; }
-    .btn-foryou { background: linear-gradient(to bottom, #fff0f5, #ffe4e1) !important; border-color: #ff1493 !important; color: #c71585 !important; }
-    .btn-verified-store { background: linear-gradient(to bottom, #fff8e1, #ffecb3) !important; border-color: #f57c00 !important; color: #e65100 !important; }
-    .btn-msg { background: linear-gradient(to bottom, #e8f5e9, #c8e6c9) !important; border-color: #2e7d32 !important; color: #1b5e20 !important; }
-    .btn-call { background: linear-gradient(to bottom, #e0f7fa, #b2ebf2) !important; border-color: #00838f !important; color: #006064 !important; }
-    .btn-back-call { background: linear-gradient(to bottom, #b2ebf2, #80deea) !important; border-color: #00838f !important; color: #004d40 !important; animation: piscaBotaoCall 1s infinite alternate; }
-    @keyframes piscaBotaoCall { from { opacity: 0.8; } to { opacity: 1; transform: scale(1.03); } }
-
-    input[type="text"], input[type="password"], textarea { border: 1px solid #707070; padding: 6px; font-size: 14px; outline: none; }
-    .top-header { border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
-    .nav-bar { display: flex; gap: 5px; margin-bottom: 15px; background: #e5e5e5; padding: 5px; border: 1px solid #ccc; flex-wrap: wrap; align-items: center; }
-    .auth-box { border: 1px solid #ccc; background: #fafafa; padding: 20px; max-width: 350px; margin: 30px auto; display: flex; flex-direction: column; gap: 10px; }
-    .post-box { border: 1px solid #ccc; padding: 10px; background: #fdfdfd; margin-bottom: 10px; transition: all 0.3s ease; }
-    .post-header { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
-    .avatar-mini { width: 36px; height: 36px; border: 1px solid #707070; object-fit: cover; background: #ccc; cursor: pointer; }
-    .post-content { font-size: 14px; line-height: 1.4; margin-bottom: 8px; white-space: pre-wrap; }
-    .post-image-big, .post-video-big { width: 100%; max-height: 400px; object-fit: contain; border: 1px solid #707070; margin: 6px 0; display: block; background: #000; }
-    .post-footer { font-size: 12px; color: #555; display: flex; justify-content: space-between; border-top: 1px solid #eee; padding-top: 8px; margin-top: 8px; }
-    .comments-section { background: #f5f5f5; border-top: 1px dashed #ccc; padding: 8px; margin-top: 8px; }
-    .comment-item { font-size: 12px; background: #fff; border: 1px solid #ddd; padding: 6px; margin-bottom: 5px; }
-    .profile-card { border: 1px solid #ccc; padding: 15px; background: #f9f9f9; margin-bottom: 15px; display: flex; gap: 15px; }
-    .avatar-large { width: 70px; height: 70px; border: 1px solid #707070; object-fit: cover; background: #ccc; cursor: pointer; transition: opacity 0.3s ease; }
-    .modal-overlay { position: fixed; top:0; left:0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.4); display: flex; justify-content: center; align-items: center; z-index: 999; }
-    .modal-box { background: #fff; border: 2px solid #333; padding: 20px; width: 90%; max-width: 380px; text-align: center; }
-    .hidden { display: none !important; }
-
-    /* NOTIFICAÇÃO ESTILO TIKTOK PARA MENSAGENS */
-    #notificacaoFlutuante {
-      position: absolute;
-      top: 15px;
-      right: 15px;
-      background: #333;
-      color: #fff;
-      padding: 10px 15px;
-      border: 2px solid #ffd700;
-      border-radius: 4px;
-      font-size: 12px;
-      z-index: 1000;
-      cursor: pointer;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-      animation: deslizaAparecer 0.4s ease;
-    }
-    @keyframes deslizaAparecer {
-      from { transform: translateY(-20px); opacity: 0; }
-      to { transform: translateY(0); opacity: 1; }
-    }
-
-    /* NOTIFICAÇÃO DE CHAMADA NA TELA (COM ATENDER E RECUSAR) */
-    #notificacaoChamada {
-      position: fixed;
-      top: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: #111;
-      color: #fff;
-      padding: 15px 20px;
-      border: 3px solid #00e5ff;
-      border-radius: 8px;
-      z-index: 2000;
-      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
-      width: 90%;
-      max-width: 400px;
-      text-align: center;
-      animation: pulaChamada 0.5s infinite alternate;
-    }
-    @keyframes pulaChamada {
-      from { transform: translateX(-50%) scale(1); }
-      to { transform: translateX(-50%) scale(1.02); }
-    }
-
-    /* ESTILOS VIP */
-    .badge-verified {
-      background: #0095f6; color: #fff; font-size: 10px; padding: 1px 4px;
-      border-radius: 50%; font-weight: bold; margin-left: 3px;
-      display: inline-block; vertical-align: middle; box-shadow: 0 0 5px rgba(0, 149, 246, 0.8);
-    }
-    @keyframes brilhaBorda {
-      0% { border-color: #ffd700; box-shadow: 0 0 8px rgba(255, 215, 0, 0.8), inset 0 0 5px rgba(255, 215, 0, 0.3); }
-      50% { border-color: #ff007f; box-shadow: 0 0 15px rgba(255, 0, 127, 0.8), inset 0 0 8px rgba(255, 0, 127, 0.3); }
-      100% { border-color: #00e5ff; box-shadow: 0 0 8px rgba(0, 229, 255, 0.8), inset 0 0 5px rgba(0, 229, 255, 0.3); }
-    }
-    .post-verified {
-      border: 2px solid #ffd700 !important;
-      background: linear-gradient(135deg, #ffffff, #fffdf0) !important;
-      animation: brilhaBorda 3s infinite alternate; position: relative;
-    }
-    .avatar-verified { border: 2px solid #ffd700 !important; box-shadow: 0 0 8px #ffd700; }
-    .profile-verified {
-      border: 2px solid #ffd700 !important; animation: brilhaBorda 3s infinite alternate;
-      background: linear-gradient(135deg, #f9f9f9, #fff9e6) !important;
-    }
-    .sparkle-icon { color: #ffa500; font-weight: bold; animation: piscaSparkle 1.5s infinite alternate; }
-    @keyframes piscaSparkle { from { opacity: 0.6; transform: scale(1); } to { opacity: 1; transform: scale(1.2); } }
-    
-    .foryou-badge {
-      background: #ff1493; color: white; font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: bold; margin-bottom: 5px; display: inline-block;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rock Chat - Completo</title>
+    <!-- Tailwind CSS para estilização moderna e rápida -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome para ícones -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @keyframes pular {
+            0% { transform: translateX(-50%) translateY(0); }
+            100% { transform: translateX(-50%) translateY(-6px); }
+        }
+        .animate-bounce-custom {
+            animation: pular 0.5s infinite alternate;
+        }
+        /* Estilos adicionais para selos e animações */
+        .verified-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: #3b82f6;
+            margin-left: 4px;
+        }
+        .profile-border-glow {
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.6);
+            border: 2px solid #3b82f6;
+        }
+    </style>
 </head>
-<body>
+<body class="bg-zinc-950 text-zinc-100 min-h-screen flex flex-col font-sans select-none">
 
-  <!-- ÁUDIO DE RINGTONE PARA CHAMADA -->
-  <audio id="ringtoneAudio" src="https://assets.mixkit.co/active_storage/sfx/2865/2865-preview.mp3" loop></audio>
+    <!-- ELEMENTO DE ÁUDIO OCULTO PARA O RINGTONE -->
+    <audio id="ringtoneAudio" preload="auto" loop src="https://actions.google.com/sounds/v1/alarms/digital_watch_alarm_long.ogg"></audio>
 
-  <div class="container">
-    <!-- BARRA DE NOTIFICAÇÃO FLUTUANTE DE MENSAGEM -->
-    <div id="notificacaoFlutuante" class="hidden" onclick="abrirChatDiretoDaNotificacao()">
-      <span id="textoNotificacaoFlutuante">Nova mensagem!</span>
+    <!-- CONTAINER DE ALERTAS DE CHAMADA URGENTE (FORÇADO NA TELA) -->
+    <div id="modal-chamada-urgente" class="hidden fixed top-5 left-1/2 transform -translate-x-1/2 bg-red-600 text-white px-6 py-4 rounded-2xl z-[99999] shadow-2xl font-bold flex items-center gap-4 animate-bounce-custom border-2 border-red-400">
+        <i class="fa-solid fa-phone-volume text-2xl animate-spin"></i>
+        <div class="flex flex-col">
+            <span id="chamador-texto" class="text-sm">Chamada recebida!</span>
+            <span class="text-xs text-red-200 font-normal">Toque para atender</span>
+        </div>
+        <div class="flex gap-2 ml-2">
+            <button id="btn-atender-chamada" class="bg-green-500 hover:bg-green-600 text-white px-3 py-1.5 rounded-xl text-sm transition shadow">Atender</button>
+            <button id="btn-recusar-chamada" class="bg-zinc-800 hover:bg-zinc-900 text-white px-3 py-1.5 rounded-xl text-sm transition shadow">Recusar</button>
+        </div>
     </div>
 
-    <!-- NOTIFICAÇÃO DE CHAMADA NA TELA (COM BOTÃO DE ATENDER / RECUSAR) -->
-    <div id="notificacaoChamada" class="hidden">
-      <h3 id="tituloChamadaEntrada" style="color: #00e5ff; margin-bottom: 8px;">📞 Chamada Recebida!</h3>
-      <p id="textoChamadaEntrada" style="font-size: 13px; margin-bottom: 12px;"></p>
-      <div style="display: flex; justify-content: center; gap: 10px;">
-        <button style="background: #4caf50; color: white; border: none; padding: 8px 16px; font-weight: bold;" onclick="atenderChamadaEntrante()">Atender</button>
-        <button class="btn-delete" style="padding: 8px 16px; font-weight: bold;" onclick="recusarChamadaEntrante()">Recusar</button>
-      </div>
+    <!-- TELA DE LOGIN / CADASTRO -->
+    <div id="auth-screen" class="fixed inset-0 bg-zinc-950 z-50 flex items-center justify-center p-4">
+        <div class="bg-zinc-900 border border-zinc-800 rounded-3xl p-8 w-full max-w-md shadow-2xl">
+            <div class="text-center mb-6">
+                <h1 class="text-3xl font-black tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-indigo-500">ROCK CHAT</h1>
+                <p class="text-zinc-400 text-sm mt-1">Conecte-se para interagir, postar e ligar.</p>
+            </div>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-zinc-400 mb-1">NOME DE USUÁRIO</label>
+                    <input type="text" id="input-username" placeholder="Ex: joao_rock" class="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500 transition">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-zinc-400 mb-1">SENHA</label>
+                    <input type="password" id="input-password" placeholder="••••••••" class="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500 transition">
+                </div>
+                
+                <div class="flex gap-3 pt-2">
+                    <button id="btn-login" class="flex-1 bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl transition shadow-lg shadow-blue-600/30">Entrar</button>
+                    <button id="btn-register" class="flex-1 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-bold py-3 rounded-xl transition">Cadastrar</button>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <div class="top-header">
-      <h1 style="font-size: 24px;">🎸 Rock Chat</h1>
-      <div id="userHeaderInfo" class="hidden">
-        <span id="headerUserName" style="font-weight: bold; font-size: 13px;"></span>
-        <button onclick="deslogar()">Sair</button>
-      </div>
-    </div>
-
-    <!-- TELA DE LOGIN / REGISTRO -->
-    <div id="authScreen" class="auth-box">
-      <h3>Entrar / Criar Conta</h3>
-      <label style="font-size: 12px;">Usuário:</label>
-      <input type="text" id="usuarioInput">
-      <label style="font-size: 12px;">Senha:</label>
-      <input type="password" id="senhaInput">
-      <button onclick="autenticar()">Entrar / Registrar</button>
-      <div id="authMsg" style="font-size: 12px; color: red;"></div>
-    </div>
-
-    <!-- APLICAÇÃO PRINCIPAL -->
-    <div id="appScreen" class="hidden">
-      <div class="nav-bar">
-        <button onclick="irParaFeed()">Início / Feed</button>
-        <button class="btn-foryou" onclick="irParaForYou()">✨ For You</button>
-        <button onclick="abrirMeuPerfil()">Meu Perfil</button>
-        <button onclick="mostrarBusca()">Buscar Pessoas</button>
-        <button class="btn-verified-store" onclick="abrirLojaSelo()">⭐ Comprar Selo</button>
-        <button id="btnAdminPanel" class="hidden" style="background: linear-gradient(to bottom, #e1bee7, #ce93d8); border-color: #8e24aa; color: #4a148c;" onclick="abrirPainelAdmin()">🛠️ Painel Admin</button>
-        <button id="btnRetornarChamadaNav" class="hidden btn-back-call" onclick="retornarParaTelaDeChamada()">📞 Entrar na Chamada</button>
-      </div>
-
-      <div id="searchView" class="hidden" style="margin-bottom: 15px;">
-        <input type="text" id="searchInput" placeholder="Digite o nome..." oninput="buscarPerfis()" style="width: 70%;">
-        <div id="searchResults" style="margin-top: 10px;"></div>
-      </div>
-
-      <!-- CRIAR POST -->
-      <div id="createPostBox" class="post-box">
-        <strong style="font-size: 13px;">Escrever mensagem:</strong>
-        <textarea id="tweetContent" style="width: 100%; height: 60px; margin: 5px 0;" placeholder="O que está acontecendo?"></textarea>
+    <!-- APLICATIVO PRINCIPAL -->
+    <div id="app-screen" class="hidden flex-1 flex flex-col max-w-2xl mx-auto w-full border-x border-zinc-900 bg-zinc-950">
         
-        <div id="postMediaPreviewContainer" class="hidden" style="position: relative; margin-bottom: 8px;">
-          <img id="postImagePreview" class="post-image-big hidden" src="">
-          <video id="postVideoPreview" class="post-video-big hidden" controls preload="metadata" playsinline></video>
-          <button onclick="removerMidiaPost()" style="position: absolute; top: 5px; right: 5px; background: #ff4444; color: white; border: none; padding: 2px 6px; font-size: 11px;">✕ Cancelar</button>
-        </div>
-
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-          <button class="btn-photo" onclick="triggerMidiaPostUpload()">📷 / 🎥</button>
-          <input type="file" id="postFileInput" accept="image/*,video/*" class="hidden" onchange="carregarPreviaMidiaPost(event)">
-          <button id="btnPublicar" onclick="publicarPost()">Publicar no Rock Chat</button>
-        </div>
-      </div>
-
-      <div id="feedView">
-        <h4 id="feedTitle" style="margin-bottom: 8px; border-bottom: 1px solid #ddd; padding-bottom: 4px;">Mensagens Recentes</h4>
-        <div id="feedContainer"></div>
-      </div>
-
-      <!-- TELA DE PERFIL -->
-      <div id="profileView" class="hidden">
-        <div id="profileCardBox" class="profile-card">
-          <div>
-            <img id="profAvatar" class="avatar-large" src="https://via.placeholder.com/70" onclick="triggerFotoUpload()">
-            <input type="file" id="fileInput" accept="image/*" class="hidden" onchange="uploadFotoPerfil(event)">
-            <div id="profAvatarText" style="font-size: 10px; color: #666; text-align: center; margin-top: 2px;">(Mudar foto)</div>
-          </div>
-          <div style="flex: 1;">
-            <h3 id="profName">@usuario</h3>
-            <div style="font-size: 13px; margin: 8px 0;">
-              Seguidores: <strong id="profSeguidores">0</strong> | Seguindo: <strong id="profSeguindo">0</strong>
+        <!-- Cabeçalho -->
+        <header class="sticky top-0 bg-zinc-950/80 backdrop-blur-md border-b border-zinc-900 p-4 flex justify-between items-center z-40">
+            <div class="flex items-center gap-3">
+                <div id="header-avatar" class="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center font-bold text-blue-400 border border-zinc-700">?</div>
+                <div>
+                    <h2 id="header-username" class="font-bold text-sm leading-tight flex items-center gap-1">Carregando...</h2>
+                    <span class="text-xs text-emerald-500 flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Online</span>
+                </div>
             </div>
-            <div style="display: flex; gap: 6px; flex-wrap: wrap;">
-              <button id="profFollowBtn" class="hidden" onclick="toggleSeguir()"></button>
-              <button id="profMsgBtn" class="hidden btn-msg" onclick="abrirTelaMensagemPerfil()">💬 Mensagem</button>
-              <button id="profCallBtn" class="hidden btn-call" onclick="iniciarLigacaoPerfil()">📞 Ligar</button>
-            </div>
-          </div>
-        </div>
-        <h4 style="margin-bottom: 8px; border-bottom: 1px solid #ddd; padding-bottom: 4px;">Minhas Postagens</h4>
-        <div id="profileFeedContainer"></div>
-      </div>
-
-      <!-- TELA DE CHAT PRIVADO -->
-      <div id="chatView" class="hidden" style="border: 1px solid #ccc; background: #fafafa; padding: 15px; margin-bottom: 15px;">
-        <div style="display: flex; align-items: center; gap: 10px; border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 15px;">
-          <button onclick="voltarDoChat()" style="font-size: 12px;">← Voltar</button>
-          <img id="chatUserAvatar" class="avatar-mini" src="">
-          <h3 id="chatUserName" style="font-size: 15px;">@usuario</h3>
-          <button class="btn-call" style="margin-left: auto; font-size: 12px;" onclick="iniciarLigacaoDoChat()">📞 Ligar</button>
-        </div>
-
-        <div id="chatMessagesContainer" style="height: 250px; overflow-y: auto; background: #fff; border: 1px solid #ddd; padding: 10px; margin-bottom: 10px; display: flex; flex-direction: column; gap: 8px;"></div>
-
-        <div>
-          <label style="font-size: 12px; font-weight: bold; display: block; margin-bottom: 4px;">Escrever mensagem:</label>
-          <textarea id="chatInputContent" style="width: 100%; height: 50px; margin-bottom: 6px;" placeholder="Digite sua mensagem..."></textarea>
-          <button class="btn-msg" style="width: 100%; padding: 8px; font-weight: bold;" onclick="enviarMensagemChat()">Enviar</button>
-        </div>
-      </div>
-
-      <!-- TELA DE LIGAÇÃO ATIVA / CHAMANDO -->
-      <div id="callView" class="hidden" style="border: 2px solid #00838f; background: #e0f7fa; padding: 20px; margin-bottom: 15px; text-align: center;">
-        <div style="display: flex; justify-content: flex-end; margin-bottom: 5px;">
-          <button onclick="colocarLigacaoEmSegundoPlano()" style="font-size: 11px; background: #fff; border: 1px solid #00838f; color: #006064;">Minimizar / Segundo Plano</button>
-        </div>
-        <h3 id="callStatusText" style="color: #006064; margin-bottom: 10px; font-size: 16px;">Ligando para @usuario...</h3>
-        <img id="callUserAvatar" class="avatar-large" style="margin: 0 auto 10px auto; display: block;" src="">
-        <h2 id="callUserName" style="color: #004d40; margin-bottom: 15px;">@usuario</h2>
-
-        <div id="callWritingArea" class="hidden" style="background: #fff; border: 1px solid #00838f; padding: 12px; margin-bottom: 15px; text-align: left;">
-          <label style="font-size: 12px; font-weight: bold; display: block; margin-bottom: 4px; color: #006064;">Escrever na ligação:</label>
-          <textarea id="callInputContent" style="width: 100%; height: 50px; margin-bottom: 6px;" placeholder="Digite algo para enviar na ligação..."></textarea>
-          <button class="btn-call" style="width: 100%; padding: 8px; font-weight: bold;" onclick="enviarTextoLigacao()">Enviar Texto na Ligação</button>
-        </div>
-
-        <div id="callLiveMessagesContainer" style="background: #ffffff; border: 1px solid #b2ebf2; padding: 10px; height: 100px; overflow-y: auto; margin-bottom: 15px; text-align: left; font-size: 13px;">
-          <div style="color: #777; font-style: italic;">As mensagens da ligação aparecerão aqui...</div>
-        </div>
-
-        <button class="btn-delete" style="padding: 10px 25px; font-size: 14px; font-weight: bold;" onclick="encerrarOuRecusarLigacao()">🔴 Desligar</button>
-      </div>
-
-      <!-- LOJA DE SELOS -->
-      <div id="verifiedStoreView" class="hidden">
-        <h4 style="margin-bottom: 8px; border-bottom: 1px solid #ddd; padding-bottom: 4px;">⭐ Loja de Selo Verificado</h4>
-        <div style="background: #fff9e6; border: 1px solid #ffd700; padding: 15px; margin-top: 10px; text-align: center;">
-          <h3 style="color: #b78103; margin-bottom: 8px;">Adquira o Selo Oficial (Válido por 5 Dias)</h3>
-          <p style="font-size: 13px; color: #555; margin-bottom: 10px;">Destaque seu perfil com a borda brilhante e o selo verificado no Rock Chat por <strong>R$ 50,00</strong>!</p>
-          <p style="font-size: 12px; color: #777; margin-bottom: 15px;">Digite <strong>Rock Chat</strong> lá onde envia pix, envie <strong>R$ 50</strong> e copie o ID da transação.</p>
-          
-          <button id="btnComprarSelo" class="btn-verified-store" style="padding: 10px 20px; font-size: 14px;" onclick="comprarSeloVerificado()">Comprar Selo Verificado (R$ 50,00)</button>
-
-          <div id="pixIdFormArea" class="hidden" style="margin-top: 15px; border-top: 1px dashed #e5c158; padding-top: 15px; text-align: left;">
-            <label style="font-size: 12px; font-weight: bold; display: block; margin-bottom: 5px;">Envie o ID do seu comprovante de transação do pix aqui:</label>
-            <input type="text" id="pixIdInput" placeholder="Ex: TX-984273821" style="width: 100%; margin-bottom: 10px;">
-            <button class="btn-verified-store" style="width: 100%; padding: 8px; font-weight: bold;" onclick="enviarIdComprovantePix()">Enviar ID para verificação</button>
-            <div id="pixStoreMsg" style="font-size: 11px; margin-top: 5px; color: green; font-weight: bold;"></div>
-          </div>
-
-          <div style="margin-top: 25px; border-top: 2px solid #ffd700; padding-top: 15px; text-align: left;">
-            <h4 style="color: #b78103; font-size: 14px; margin-bottom: 5px;">🔑 Já enviou o ID e o dono aprovou? Resgate seu Verificado aqui:</h4>
-            <p style="font-size: 11px; color: #666; margin-bottom: 8px;">Digite abaixo o código/ID de transação aprovado que está na lista de solicitações:</p>
-            <div style="display: flex; gap: 5px;">
-              <input type="text" id="codigoResgateInput" placeholder="Cole o ID da transação..." style="flex: 1;">
-              <button class="btn-verified-store" onclick="resgatarCodigoVerificado()">Resgatar Selo</button>
-            </div>
-            <div id="resgateMsg" style="font-size: 11px; margin-top: 5px; font-weight: bold;"></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- PAINEL ADMIN -->
-      <div id="adminView" class="hidden">
-        <h4 style="margin-bottom: 8px; border-bottom: 1px solid #ddd; padding-bottom: 4px;">🛠️ Painel Administrativo - Histórico Pix / IDs de Comprovantes</h4>
-        <div id="adminRequestsContainer" style="margin-top: 10px;">
-          <div style="font-size: 12px; color: #777;">Carregando histórico...</div>
-        </div>
-      </div>
-
-    </div>
-  </div>
-
-  <div id="confirmModal" class="modal-overlay hidden">
-    <div class="modal-box">
-      <h4 style="margin-bottom: 10px;">⚠️ Confirmar Exclusão</h4>
-      <p style="font-size: 13px;">Você deseja excluir seu post?</p>
-      <div style="margin-top: 15px; display: flex; justify-content: center; gap: 10px;">
-        <button class="btn-delete" onclick="confirmarDeletarPost()">Excluir para sempre</button>
-        <button onclick="fecharModalExclusao()">Cancelar</button>
-      </div>
-    </div>
-  </div>
-
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getDatabase, ref, push, onValue, set, remove, get, child, update, onDisconnect } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
-
-    const CLOUDINARY_CLOUD_NAME = "jjtcunxk"; 
-    const CLOUDINARY_UPLOAD_PRESET = "CLOUDINARY_UPLOAD_PRESET";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyBQfe042ljf47xkgzamUQb5XFFKQrWyXEo",
-      authDomain: "rock-48704.firebaseapp.com",
-      projectId: "rock-48704",
-      storageBucket: "rock-48704.firebasestorage.app",
-      messagingSenderId: "271921780142",
-      appId: "1:271921780142:web:b11dc507d07eb86e71243f",
-      measurementId: "G-QS5ZRN4GR3"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
-
-    const ADMIN_USER = "rockchat"; 
-
-    let usuarioAtual = null;
-    let perfilAberto = null;
-    let chatComUsuario = null; 
-    let modoAtual = 'feed'; 
-    let todosUsuarios = {};
-    let todosPosts = {};
-    let historicoPix = {};
-    let solicitacoesAprovadas = {}; 
-    let postParaDeletar = null;
-    let tipoMidiaPost = null;
-    let arquivoSelecionado = null;
-    let ultimaMensagemNotificadaKey = null;
-
-    // VARIÁVEIS DE SISTEMA DE LIGAÇÃO
-    let chamadaAtualId = null;
-    let chamadaAtivaObj = null;
-    let ligacaoEmAndamentoKey = null;
-    let usuarioChamadoAtualmente = null;
-    let temChamadaAtivaOuChamando = false;
-    let intervaloVibracao = null;
-
-    // QUANDO A PÁGINA CARREGA, VERIFICA SE JÁ HÁ UMA CONTA SALVA NO LOCALSTORAGE
-    window.addEventListener('DOMContentLoaded', () => {
-      solicitarPermissaoNotificacao();
-      
-      const usuarioSalvo = localStorage.getItem('rockchat_usuario_logado');
-      if (usuarioSalvo) {
-        get(child(ref(db), `usuarios/${usuarioSalvo}`)).then((snapshot) => {
-          if (snapshot.exists()) {
-            entrarNoApp(usuarioSalvo);
-          } else {
-            localStorage.removeItem('rockchat_usuario_logado');
-          }
-        }).catch(() => {
-          entrarNoApp(usuarioSalvo);
-        });
-      }
-    });
-
-    function solicitarPermissaoNotificacao() {
-      if ("Notification" in window && Notification.permission !== "granted") {
-        Notification.requestPermission();
-      }
-    }
-
-    function iniciarVibracaoCelular() {
-      if ("vibrate" in navigator) {
-        navigator.vibrate([500, 500]);
-        intervaloVibracao = setInterval(() => {
-          navigator.vibrate([500, 500]);
-        }, 1000);
-      }
-    }
-
-    function pararVibracaoCelular() {
-      if ("vibrate" in navigator) {
-        if (intervaloVibracao) {
-          clearInterval(intervaloVibracao);
-          intervaloVibracao = null;
-        }
-        navigator.vibrate(0);
-      }
-    }
-
-    window.autenticar = async function() {
-      const usuario = document.getElementById('usuarioInput').value.trim().toLowerCase();
-      const senha = document.getElementById('senhaInput').value.trim();
-      const msg = document.getElementById('authMsg');
-
-      if (!usuario || !senha) { msg.innerText = "Preencha os dois campos!"; return; }
-      if (/[.#$\[\]]/.test(usuario)) { msg.innerText = "Nome de usuário inválido"; return; }
-
-      msg.innerText = "Aguarde...";
-
-      try {
-        const snapshot = await get(child(ref(db), `usuarios/${usuario}`));
-        if (snapshot.exists()) {
-          const dados = snapshot.val();
-          if (dados.senha === senha) { 
-            msg.innerText = ""; 
-            localStorage.setItem('rockchat_usuario_logado', usuario);
-            entrarNoApp(usuario); 
-          } 
-          else { msg.innerText = "Senha incorreta!"; }
-        } else {
-          await set(ref(db, `usuarios/${usuario}`), { senha: senha, foto: 'https://via.placeholder.com/70/ccc/666?text=Foto', verificado: false, saldo: 0 });
-          msg.innerText = "";
-          localStorage.setItem('rockchat_usuario_logado', usuario);
-          entrarNoApp(usuario);
-        }
-      } catch (error) {
-        alert("Erro de Login: " + error.message);
-        msg.innerText = "Erro ao conectar.";
-      }
-    };
-
-    function entrarNoApp(usuario) {
-      usuarioAtual = usuario;
-      document.getElementById('authScreen').classList.add('hidden');
-      document.getElementById('appScreen').classList.remove('hidden');
-      document.getElementById('userHeaderInfo').classList.remove('hidden');
-      
-      if (usuarioAtual === ADMIN_USER) {
-        document.getElementById('btnAdminPanel').classList.remove('hidden');
-        escutarHistoricoPix();
-      } else {
-        document.getElementById('btnAdminPanel').classList.add('hidden');
-      }
-
-      onValue(ref(db, 'usuarios'), (snap) => {
-        todosUsuarios = snap.val() || {};
-        const meuData = todosUsuarios[usuarioAtual] || {};
-        const badgeHeader = meuData.verificado ? ' <span class="badge-verified" title="Verificado">✔</span>' : '';
-        document.getElementById('headerUserName').innerHTML = '@' + usuario + badgeHeader;
-
-        if (meuData.verificado && meuData.verificadoExpira && Date.now() > meuData.verificadoExpira) {
-          update(ref(db, `usuarios/${usuarioAtual}`), { verificado: false, verificadoExpira: null });
-        }
-
-        if (perfilAberto) carregarPerfil(perfilAberto);
-      });
-
-      escutarSolicitacoes(); 
-      escutarMensagensPrivadas();
-      escutarLigacoesRecebidas();
-      carregarPostsGerais();
-    }
-
-    window.deslogar = function() { 
-      localStorage.removeItem('rockchat_usuario_logado');
-      location.reload(); 
-    };
-
-    function esconderTodasAsAbas() {
-      document.getElementById('feedView').classList.add('hidden');
-      document.getElementById('createPostBox').classList.add('hidden');
-      document.getElementById('profileView').classList.add('hidden');
-      document.getElementById('searchView').classList.add('hidden');
-      document.getElementById('verifiedStoreView').classList.add('hidden');
-      document.getElementById('adminView').classList.add('hidden');
-      document.getElementById('chatView').classList.add('hidden');
-      document.getElementById('callView').classList.add('hidden');
-    }
-
-    window.irParaFeed = function() {
-      modoAtual = 'feed';
-      esconderTodasAsAbas();
-      document.getElementById('feedView').classList.remove('hidden');
-      document.getElementById('createPostBox').classList.remove('hidden');
-      document.getElementById('feedTitle').innerText = "Mensagens Recentes";
-      perfilAberto = null;
-      renderizarFeed(todosPosts, 'feedContainer', false);
-    };
-
-    window.irParaForYou = function() {
-      modoAtual = 'foryou';
-      esconderTodasAsAbas();
-      document.getElementById('feedView').classList.remove('hidden');
-      document.getElementById('feedTitle').innerText = "✨ For You (Em Alta na Plataforma)";
-      perfilAberto = null;
-      renderizarFeed(todosPosts, 'feedContainer', true);
-    };
-
-    window.abrirLojaSelo = function() {
-      modoAtual = 'store';
-      esconderTodasAsAbas();
-      document.getElementById('verifiedStoreView').classList.remove('hidden');
-      
-      document.getElementById('btnComprarSelo').classList.remove('hidden');
-      document.getElementById('pixIdFormArea').classList.add('hidden');
-      document.getElementById('pixIdInput').value = '';
-      document.getElementById('pixStoreMsg').innerText = '';
-      document.getElementById('codigoResgateInput').value = '';
-      document.getElementById('resgateMsg').innerText = '';
-      perfilAberto = null;
-    };
-
-    window.abrirPainelAdmin = function() {
-      if (usuarioAtual !== ADMIN_USER) return;
-      modoAtual = 'admin';
-      esconderTodasAsAbas();
-      document.getElementById('adminView').classList.remove('hidden');
-      perfilAberto = null;
-      renderizarPainelAdmin();
-    };
-
-    window.iniciarLigacaoPerfil = function() {
-      if (!perfilAberto || perfilAberto === usuarioAtual) return;
-      if (temChamadaAtivaOuChamando) {
-        alert("Já existe uma chamada em andamento!");
-        return;
-      }
-      dispararLigacaoPara(perfilAberto);
-    };
-
-    window.iniciarLigacaoDoChat = function() {
-      if (!chatComUsuario || chatComUsuario === usuarioAtual) return;
-      if (temChamadaAtivaOuChamando) {
-        alert("Já existe uma chamada em andamento!");
-        return;
-      }
-      dispararLigacaoPara(chatComUsuario);
-    };
-
-    async function dispararLigacaoPara(outroUsuario) {
-      usuarioChamadoAtualmente = outroUsuario;
-      const outroData = todosUsuarios[outroUsuario] || {};
-
-      try {
-        const novaLigacaoRef = push(ref(db, 'ligacoes'), {
-          remetente: usuarioAtual,
-          destinatario: outroUsuario,
-          status: 'chamando',
-          timestamp: Date.now()
-        });
-
-        ligacaoEmAndamentoKey = novaLigacaoRef.key;
-        temChamadaAtivaOuChamando = true;
-        atualizarBotaoRetornarChamadaNav();
-
-        onDisconnect(ref(db, `ligacoes/${ligacaoEmAndamentoKey}/status`)).set('erro_rede');
-
-        esconderTodasAsAbas();
-        modoAtual = 'call';
-        document.getElementById('callView').classList.remove('hidden');
-        document.getElementById('callStatusText').innerText = `Ligando para @${outroUsuario}...`;
-        document.getElementById('callUserName').innerText = '@' + outroUsuario;
-        document.getElementById('callUserAvatar').src = outroData.foto || 'https://via.placeholder.com/70/ccc/666?text=Foto';
-        document.getElementById('callWritingArea').classList.add('hidden');
-        document.getElementById('callLiveMessagesContainer').innerHTML = '<div style="color: #777; font-style: italic;">Aguardando a outra pessoa atender...</div>';
-
-        monitorarLigacaoAtual(ligacaoEmAndamentoKey);
-      } catch (err) {
-        alert("Erro ao iniciar ligação: " + err.message);
-      }
-    }
-
-    function escutarLigacoesRecebidas() {
-      const ligacoesRef = ref(db, 'ligacoes');
-      const ringtone = document.getElementById('ringtoneAudio');
-
-      onValue(ligacoesRef, (snap) => {
-        const dados = snap.val() || {};
-        let ligacaoEntranteKey = null;
-        let ligacaoEntranteObj = null;
-
-        Object.keys(dados).forEach(key => {
-          const lig = dados[key];
-          
-          if ((lig.remetente === usuarioAtual || lig.destinatario === usuarioAtual) && (lig.status === 'chamando' || lig.status === 'atendida')) {
-            if (lig.remetente === usuarioAtual && !ligacaoEmAndamentoKey) {
-              ligacaoEmAndamentoKey = key;
-            }
-          }
-
-          if (lig.destinatario === usuarioAtual && lig.status === 'chamando') {
-            ligacaoEntranteKey = key;
-            ligacaoEntranteObj = lig;
-          }
-        });
-
-        const notifEl = document.getElementById('notificacaoChamada');
-        if (ligacaoEntranteKey && ligacaoEntranteObj) {
-          chamadaAtualId = ligacaoEntranteKey;
-          chamadaAtivaObj = ligacaoEntranteObj;
-          const remetenteData = todosUsuarios[ligacaoEntranteObj.remetente] || {};
-          const badgeVer = remetenteData.verificado ? ' ✔' : '';
-          const textoNotif = `@${ligacaoEntranteObj.remetente}${badgeVer} está te ligando no Rock Chat!`;
-          
-          document.getElementById('textoChamadaEntrada').innerHTML = textoNotif;
-          notifEl.classList.remove('hidden');
-
-          // NOTIFICAÇÃO NATIVA DO NAVEGADOR
-          if ("Notification" in window) {
-            if (Notification.permission === "granted") {
-              const urlAlvo = window.location.origin + window.location.pathname;
-              const notificacaoSistema = new Notification(`@${ligacaoEntranteObj.remetente} está te ligando!`, {
-                body: `Toque aqui para entrar no site e atender a chamada de voz agora.`,
-                icon: remetenteData.foto || "https://via.placeholder.com/128",
-                tag: "chamada_rockchat",
-                renotify: true
-              });
-
-              notificacaoSistema.onclick = function() {
-                window.focus();
-                notificacaoSistema.close();
-                window.location.href = urlAlvo;
-              };
-            } else if (Notification.permission !== "denied") {
-              Notification.requestPermission().then(permission => {
-                if (permission === "granted") {
-                  const urlAlvo = window.location.origin + window.location.pathname;
-                  const notificacaoSistema = new Notification(`@${ligacaoEntranteObj.remetente} está te ligando!`, {
-                    body: `Toque aqui para entrar no site e atender a chamada de voz agora.`,
-                    icon: remetenteData.foto || "https://via.placeholder.com/128",
-                    tag: "chamada_rockchat",
-                    renotify: true
-                  });
-
-                  notificacaoSistema.onclick = function() {
-                    window.focus();
-                    notificacaoSistema.close();
-                    window.location.href = urlAlvo;
-                  };
-                }
-              });
-            }
-          }
-
-          ringtone.play().catch(e => console.log("Áudio bloqueado", e));
-          iniciarVibracaoCelular();
-
-        } else {
-          notifEl.classList.add('hidden');
-          ringtone.pause();
-          ringtone.currentTime = 0;
-          pararVibracaoCelular();
-        }
-
-        if (ligacaoEmAndamentoKey && dados[ligacaoEmAndamentoKey]) {
-          const statusAtual = dados[ligacaoEmAndamentoKey].status;
-          
-          if (statusAtual === 'atendida' || statusAtual === 'recusada' || statusAtual === 'encerrada') {
-            ringtone.pause();
-            ringtone.currentTime = 0;
-            pararVibracaoCelular();
-          }
-
-          const outroUser = dados[ligacaoEmAndamentoKey].remetente === usuarioAtual ? dados[ligacaoEmAndamentoKey].destinatario : dados[ligacaoEmAndamentoKey].remetente;
-          usuarioChamadoAtualmente = outroUser;
-
-          if (statusAtual === 'chamando' || statusAtual === 'atendida') {
-            temChamadaAtivaOuChamando = true;
-          } else {
-            temChamadaAtivaOuChamando = false;
-            ligacaoEmAndamentoKey = null;
-            ringtone.pause();
-            ringtone.currentTime = 0;
-            pararVibracaoCelular();
-          }
-          atualizarBotaoRetornarChamadaNav();
-
-          if (statusAtual === 'recusada') {
-            document.getElementById('callStatusText').innerText = "Ligação recusada";
-            pararVibracaoCelular();
-            document.getElementById('callLiveMessagesContainer').innerHTML = '<div style="color: #d32f2f; font-weight: bold;">❌ A ligação foi recusada.</div>';
-            document.getElementById('callWritingArea').classList.add('hidden');
-            setTimeout(() => { if (modoAtual === 'call') irParaFeed(); }, 3000);
-          } else if (statusAtual === 'atendida') {
-            document.getElementById('callStatusText').innerText = "Ligação Ativa 📞";
-            pararVibracaoCelular();
-            document.getElementById('callWritingArea').classList.remove('hidden');
-          } else if (statusAtual === 'encerrada') {
-            document.getElementById('callStatusText').innerText = "Ligação encerrada";
-            pararVibracaoCelular();
-            document.getElementById('callLiveMessagesContainer').innerHTML = '<div style="color: #d32f2f; font-weight: bold;">🔴 A ligação foi encerrada.</div>';
-            document.getElementById('callWritingArea').classList.add('hidden');
-            setTimeout(() => { if (modoAtual === 'call') irParaFeed(); }, 2000);
-          } else if (statusAtual === 'erro_rede') {
-            document.getElementById('callStatusText').innerText = "Erro de rede / Desconectado";
-            pararVibracaoCelular();
-            document.getElementById('callLiveMessagesContainer').innerHTML = '<div style="color: #d32f2f; font-weight: bold;">⚠️ Erro de rede.</div>';
-            document.getElementById('callWritingArea').classList.add('hidden');
-            setTimeout(() => { if (modoAtual === 'call') irParaFeed(); }, 3000);
-          }
-        } else {
-          if (temChamadaAtivaOuChamando && ligacaoEmAndamentoKey) {
-            temChamadaAtivaOuChamando = false;
-            ligacaoEmAndamentoKey = null;
-            ringtone.pause();
-            ringtone.currentTime = 0;
-            pararVibracaoCelular();
-            atualizarBotaoRetornarChamadaNav();
-            if (modoAtual === 'call') {
-              document.getElementById('callStatusText').innerText = "Reconectando / Erro de Rede";
-              setTimeout(() => irParaFeed(), 3000);
-            }
-          }
-        }
-      });
-    }
-
-    function atualizarBotaoRetornarChamadaNav() {
-      const btn = document.getElementById('btnRetornarChamadaNav');
-      if (temChamadaAtivaOuChamando) {
-        btn.classList.remove('hidden');
-      } else {
-        btn.classList.add('hidden');
-      }
-    }
-
-    window.retornarParaTelaDeChamada = function() {
-      if (!ligacaoEmAndamentoKey) return;
-      esconderTodasAsAbas();
-      modoAtual = 'call';
-      document.getElementById('callView').classList.remove('hidden');
-      
-      const outroUser = usuarioChamadoAtualmente || 'usuário';
-      const outroData = todosUsuarios[outroUser] || {};
-      document.getElementById('callUserName').innerText = '@' + outroUser;
-      document.getElementById('callUserAvatar').src = outroData.foto || 'https://via.placeholder.com/70/ccc/666?text=Foto';
-      
-      get(child(ref(db), `ligacoes/${ligacaoEmAndamentoKey}/status`)).then((snap) => {
-        const st = snap.val();
-        if (st === 'atendida') {
-          document.getElementById('callStatusText').innerText = "Ligação Ativa 📞";
-          document.getElementById('callWritingArea').classList.remove('hidden');
-        } else {
-          document.getElementById('callStatusText').innerText = `Ligando para @${outroUser}...`;
-          document.getElementById('callWritingArea').classList.add('hidden');
-        }
-      });
-
-      monitorarLigacaoAtual(ligacaoEmAndamentoKey);
-    };
-
-    window.colocarLigacaoEmSegundoPlano = function() {
-      irParaFeed();
-    };
-
-    window.atenderChamadaEntrante = async function() {
-      if (!chamadaAtualId) return;
-      document.getElementById('notificacaoChamada').classList.add('hidden');
-      document.getElementById('ringtoneAudio').pause();
-      document.getElementById('ringtoneAudio').currentTime = 0;
-      pararVibracaoCelular();
-      
-      try {
-        await update(ref(db, `ligacoes/${chamadaAtualId}`), { status: 'atendida' });
-        ligacaoEmAndamentoKey = chamadaAtualId;
-        temChamadaAtivaOuChamando = true;
-        atualizarBotaoRetornarChamadaNav();
-
-        onDisconnect(ref(db, `ligacoes/${ligacaoEmAndamentoKey}/status`)).set('erro_rede');
-        
-        const remetente = chamadaAtivaObj.remetente;
-        usuarioChamadoAtualmente = remetente;
-        const remetenteData = todosUsuarios[remetente] || {};
-
-        esconderTodasAsAbas();
-        modoAtual = 'call';
-        document.getElementById('callView').classList.remove('hidden');
-        document.getElementById('callStatusText').innerText = "Ligação Ativa 📞";
-        document.getElementById('callUserName').innerText = '@' + remetente;
-        document.getElementById('callUserAvatar').src = remetenteData.foto || 'https://via.placeholder.com/70/ccc/666?text=Foto';
-        document.getElementById('callWritingArea').classList.remove('hidden');
-        document.getElementById('callLiveMessagesContainer').innerHTML = '<div style="color: #777; font-style: italic;">Ligação conectada!</div>';
-
-        monitorarLigacaoAtual(chamadaAtualId);
-        escutarTextosDaLigacao(chamadaAtualId);
-      } catch (err) {
-        alert("Erro ao atender: " + err.message);
-      }
-    };
-
-    window.recusarChamadaEntrante = async function() {
-      if (!chamadaAtualId) return;
-      document.getElementById('notificacaoChamada').classList.add('hidden');
-      document.getElementById('ringtoneAudio').pause();
-      document.getElementById('ringtoneAudio').currentTime = 0;
-      pararVibracaoCelular();
-      try {
-        await update(ref(db, `ligacoes/${chamadaAtualId}`), { status: 'recusada' });
-        chamadaAtualId = null;
-        chamadaAtivaObj = null;
-      } catch (err) {
-        alert("Erro ao recusar: " + err.message);
-      }
-    };
-
-    function monitorarLigacaoAtual(ligId) {
-      modoAtual = 'call';
-      escutarTextosDaLigacao(ligId);
-    }
-
-    function escutarTextosDaLigacao(ligId) {
-      onValue(ref(db, `ligacoes/${ligId}/mensagens_ligacao`), (snap) => {
-        const container = document.getElementById('callLiveMessagesContainer');
-        const msgs = snap.val() || {};
-        container.innerHTML = '';
-
-        const keys = Object.keys(msgs);
-        if (keys.length === 0) {
-          container.innerHTML = '<div style="color: #777; font-style: italic;">Nenhum texto enviado na ligação...</div>';
-          return;
-        }
-
-        keys.forEach(k => {
-          const m = msgs[k];
-          const ehMeu = m.autor === usuarioAtual;
-          const cor = ehMeu ? '#006064' : '#b78103';
-          const autorTexto = ehMeu ? 'Você' : `@${m.autor}`;
-          
-          const div = document.createElement('div');
-          div.style.marginBottom = '5px';
-          div.innerHTML = `<strong style="color: ${cor};">${autorTexto} digitou na ligação:</strong> ${m.texto}`;
-          container.appendChild(div);
-        });
-
-        container.scrollTop = container.scrollHeight;
-      });
-    }
-
-    window.enviarTextoLigacao = async function() {
-      const input = document.getElementById('callInputContent');
-      const texto = input.value.trim();
-      if (!texto || !ligacaoEmAndamentoKey) return;
-
-      try {
-        await push(ref(db, `ligacoes/${ligacaoEmAndamentoKey}/mensagens_ligacao`), {
-          autor: usuarioAtual,
-          texto: texto,
-          timestamp: Date.now()
-        });
-        input.value = '';
-      } catch (err) {
-        alert("Erro ao enviar texto: " + err.message);
-      }
-    };
-
-    window.encerrarOuRecusarLigacao = async function() {
-      document.getElementById('ringtoneAudio').pause();
-      document.getElementById('ringtoneAudio').currentTime = 0;
-      pararVibracaoCelular();
-
-      if (ligacaoEmAndamentoKey) {
-        try {
-          const snap = await get(child(ref(db), `ligacoes/${ligacaoEmAndamentoKey}/status`));
-          const statusAtual = snap.val();
-          
-          if (statusAtual === 'chamando') {
-            await update(ref(db, `ligacoes/${ligacaoEmAndamentoKey}`), { status: 'recusada' });
-          } else {
-            await update(ref(db, `ligacoes/${ligacaoEmAndamentoKey}`), { status: 'encerrada' });
-          }
-        } catch(e) {}
-      }
-      ligacaoEmAndamentoKey = null;
-      chamadaAtualId = null;
-      temChamadaAtivaOuChamando = false;
-      atualizarBotaoRetornarChamadaNav();
-      irParaFeed();
-    };
-
-    function obterChaveChat(user1, user2) {
-      return [user1, user2].sort().join('_');
-    }
-
-    function escutarMensagensPrivadas() {
-      const chatsRef = ref(db, 'mensagens_privadas');
-      onValue(chatsRef, (snap) => {
-        const dados = snap.val() || {};
-        let ultimaMsgEncontrada = null;
-        let remetenteUltimaMsg = null;
-
-        Object.keys(dados).forEach(chatKey => {
-          if (chatKey.includes(usuarioAtual)) {
-            const msgsObj = dados[chatKey] || {};
-            Object.keys(msgsObj).forEach(mKey => {
-              const msg = msgsObj[mKey];
-              if (msg.destinatario === usuarioAtual) {
-                if (!ultimaMensagemNotificadaKey || mKey > ultimaMensagemNotificadaKey) {
-                  ultimaMensagemNotificadaKey = mKey;
-                  remetenteUltimaMsg = msg.remetente;
-                  ultimaMsgEncontrada = msg;
-                }
-              }
-            });
-          }
-        });
-
-        if (ultimaMsgEncontrada && remetenteUltimaMsg) {
-          mostrarNotificacaoTikTok(remetenteUltimaMsg);
-        }
-
-        if (chatComUsuario) {
-          carregarMensagensDoChat(chatComUsuario);
-        }
-      });
-    }
-
-    function mostrarNotificacaoTikTok(remetente) {
-      const notifEl = document.getElementById('notificacaoFlutuante');
-      const textoEl = document.getElementById('textoNotificacaoFlutuante');
-      textoEl.innerText = `💬 Nova mensagem de @${remetente}`;
-      notifEl.classList.remove('hidden');
-      window.remetenteNotificacaoAtiva = remetente;
-    }
-
-    window.abrirChatDiretoDaNotificacao = function() {
-      document.getElementById('notificacaoFlutuante').classList.add('hidden');
-      if (window.remetenteNotificacaoAtiva) {
-        abrirTelaMensagemComUsuario(window.remetenteNotificacaoAtiva);
-      }
-    };
-
-    window.abrirTelaMensagemPerfil = function() {
-      if (!perfilAberto || perfilAberto === usuarioAtual) return;
-      abrirTelaMensagemComUsuario(perfilAberto);
-    };
-
-    function abrirTelaMensagemComUsuario(outroUsuario) {
-      chatComUsuario = outroUsuario;
-      esconderTodasAsAbas();
-      document.getElementById('chatView').classList.remove('hidden');
-      
-      const outroData = todosUsuarios[outroUsuario] || {};
-      document.getElementById('chatUserName').innerText = '@' + outroUsuario;
-      document.getElementById('chatUserAvatar').src = outroData.foto || 'https://via.placeholder.com/36/ccc/666?text=Foto';
-      
-      document.getElementById('notificacaoFlutuante').classList.add('hidden');
-      carregarMensagensDoChat(outroUsuario);
-    }
-
-    window.voltarDoChat = function() {
-      chatComUsuario = null;
-      if (perfilAberto) {
-        abrirPerfil(perfilAberto);
-      } else {
-        irParaFeed();
-      }
-    };
-
-    function carregarMensagensDoChat(outroUsuario) {
-      const container = document.getElementById('chatMessagesContainer');
-      container.innerHTML = '<div style="font-size: 11px; color: #777;">Carregando conversa...</div>';
-
-      const chatKey = obterChaveChat(usuarioAtual, outroUsuario);
-      get(child(ref(db), `mensagens_privadas/${chatKey}`)).then((snap) => {
-        container.innerHTML = '';
-        if (!snap.exists()) {
-          container.innerHTML = '<div style="font-size: 11px; color: #777; text-align: center;">Nenhuma mensagem ainda.</div>';
-          return;
-        }
-
-        const msgs = snap.val();
-        Object.keys(msgs).forEach(mKey => {
-          const m = msgs[mKey];
-          const ehMeu = m.remetente === usuarioAtual;
-          const alinhamento = ehMeu ? 'align-self: flex-end; background: #dcf8c6;' : 'align-self: flex-start; background: #fff; border: 1px solid #ddd;';
-          const horaStr = new Date(m.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
-          const balao = document.createElement('div');
-          balao.style.cssText = `max-width: 75%; padding: 8px; border-radius: 6px; font-size: 13px; margin-bottom: 5px; word-break: break-word; ${alinhamento}`;
-          balao.innerHTML = `<div>${m.texto}</div><div style="font-size: 9px; color: #666; text-align: right; margin-top: 3px;">${horaStr}</div>`;
-          container.appendChild(balao);
-        });
-
-        container.scrollTop = container.scrollHeight;
-      });
-    }
-
-    window.enviarMensagemChat = async function() {
-      const input = document.getElementById('chatInputContent');
-      const texto = input.value.trim();
-      if (!texto || !chatComUsuario) return;
-
-      const chatKey = obterChaveChat(usuarioAtual, chatComUsuario);
-      try {
-        await push(ref(db, `mensagens_privadas/${chatKey}`), {
-          remetente: usuarioAtual,
-          destinatario: chatComUsuario,
-          texto: texto,
-          timestamp: Date.now()
-        });
-        input.value = '';
-        carregarMensagensDoChat(chatComUsuario);
-      } catch (err) {
-        alert("Erro ao enviar: " + err.message);
-      }
-    };
-
-    window.comprarSeloVerificado = function() {
-      const meuPerfil = todosUsuarios[usuarioAtual] || {};
-      if (meuPerfil.verificado) {
-        alert("Você já possui o selo verificado ativo!");
-        return;
-      }
-      document.getElementById('btnComprarSelo').classList.add('hidden');
-      document.getElementById('pixIdFormArea').classList.remove('hidden');
-      document.getElementById('pixIdInput').focus();
-    };
-
-    window.enviarIdComprovantePix = async function() {
-      const idPix = document.getElementById('pixIdInput').value.trim();
-      const msgEl = document.getElementById('pixStoreMsg');
-
-      if (!idPix) {
-        alert("Por favor, digite o ID do seu comprovante do Pix!");
-        return;
-      }
-
-      msgEl.style.color = "blue";
-      msgEl.innerText = "Enviando ID...";
-
-      try {
-        await push(ref(db, 'historico pix'), {
-          usuario: usuarioAtual,
-          idComprovante: idPix,
-          valor: 50,
-          destino: ADMIN_USER,
-          status: "pendente",
-          timestamp: Date.now()
-        });
-
-        msgEl.style.color = "green";
-        msgEl.innerText = "ID enviado com sucesso! Aguarde aprovação.";
-        document.getElementById('pixIdInput').value = '';
-      } catch (err) {
-        msgEl.style.color = "red";
-        msgEl.innerText = "Erro ao enviar: " + err.message;
-      }
-    };
-
-    function escutarHistoricoPix() {
-      onValue(ref(db, 'historico pix'), (snap) => {
-        historicoPix = snap.val() || {};
-        if (modoAtual === 'admin' && usuarioAtual === ADMIN_USER) {
-          renderizarPainelAdmin();
-        }
-      });
-    }
-
-    function escutarSolicitacoes() {
-      onValue(ref(db, 'solicitacoes_verificado'), (snap) => {
-        solicitacoesAprovadas = snap.val() || {};
-      });
-    }
-
-    window.renderizarPainelAdmin = function() {
-      const container = document.getElementById('adminRequestsContainer');
-      container.innerHTML = '';
-
-      const keys = Object.keys(historicoPix);
-      if (keys.length === 0) {
-        container.innerHTML = '<div style="font-size: 12px; color: #777;">Nenhum histórico pix.</div>';
-        return;
-      }
-
-      keys.reverse();
-      keys.forEach(reqId => {
-        const item = historicoPix[reqId];
-        const isPendente = item.status === 'pendente';
-        const corStatus = isPendente ? '#e65100' : '#2e7d32';
-        const textoStatus = isPendente ? 'Pendente (Aprovar)' : 'Aprovado ✔';
-
-        const card = document.createElement('div');
-        card.style.cssText = "background: #fff; border: 1px solid #ccc; padding: 10px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;";
-        card.innerHTML = `
-          <div>
-            <strong style="font-size: 13px;">@${item.usuario}</strong> - Valor: R$ ${item.valor},00
-            <div style="font-size: 11px; color: #333; margin-top: 2px;"><strong>ID Comprovante:</strong> ${item.idComprovante || 'N/A'}</div>
-            <div style="font-size: 11px; color: ${corStatus}; font-weight: bold; margin-top: 2px;">Status: ${textoStatus}</div>
-          </div>
-          <div>
-            ${isPendente ? `<button style="background: #4caf50; color: white; border: none; padding: 6px 12px; font-weight: bold; cursor: pointer;" onclick="aprovarParaSolicitacoes('${reqId}', '${item.usuario}', '${item.idComprovante}')">Aprovar ✔</button>` : '<span style="font-size: 11px; color: #2e7d32; font-weight: bold;">Enviado</span>'}
-          </div>
-        `;
-        container.appendChild(card);
-      });
-    }
-
-    window.aprovarParaSolicitacoes = async function(reqId, targetUser, idComprovante) {
-      try {
-        const updates = {};
-        updates[`historico pix/${reqId}/status`] = "aprovado";
-        updates[`solicitacoes_verificado/${idComprovante}`] = {
-          usuario: targetUser,
-          idComprovante: idComprovante,
-          timestamp: Date.now()
-        };
-        await update(ref(db), updates);
-        alert(`ID aprovado com sucesso!`);
-      } catch (err) {
-        alert("Erro ao aprovar: " + err.message);
-      }
-    };
-
-    window.resgatarCodigoVerificado = async function() {
-      const codigoDigitado = document.getElementById('codigoResgateInput').value.trim();
-      const msgEl = document.getElementById('resgateMsg');
-
-      if (!codigoDigitado) {
-        msgEl.style.color = "red";
-        msgEl.innerText = "Digite o ID da transação!";
-        return;
-      }
-
-      msgEl.style.color = "blue";
-      msgEl.innerText = "Verificando...";
-
-      try {
-        const codigoRef = ref(db, `solicitacoes_verificado/${codigoDigitado}`);
-        const snap = await get(codigoRef);
-
-        if (!snap.exists()) {
-          msgEl.style.color = "red";
-          msgEl.innerText = "ID inválido ou já resgatado!";
-          return;
-        }
-
-        const cincoDiasMs = 5 * 24 * 60 * 60 * 1000;
-        const expiracao = Date.now() + cincoDiasMs;
-
-        const updates = {};
-        updates[`usuarios/${usuarioAtual}/verificado`] = true;
-        updates[`usuarios/${usuarioAtual}/verificadoExpira`] = expiracao;
-        updates[`solicitacoes_verificado/${codigoDigitado}`] = null;
-
-        await update(ref(db), updates);
-
-        msgEl.style.color = "green";
-        msgEl.innerText = "Selo ativado por 5 dias com sucesso!";
-        document.getElementById('codigoResgateInput').value = '';
-      } catch (err) {
-        msgEl.style.color = "red";
-        msgEl.innerText = "Erro ao resgatar: " + err.message;
-      }
-    };
-
-    window.mostrarBusca = function() { document.getElementById('searchView').classList.toggle('hidden'); };
-
-    window.triggerFotoUpload = function() {
-      if (perfilAberto === usuarioAtual) {
-        document.getElementById('fileInput').click();
-      }
-    };
-
-    window.uploadFotoPerfil = async function(e) {
-      const file = e.target.files[0];
-      if (!file) return;
-
-      const avatarImg = document.getElementById('profAvatar');
-      const textLabel = document.getElementById('profAvatarText');
-
-      try {
-        avatarImg.style.opacity = '0.4';
-        textLabel.innerText = "Enviando...";
-
-        const urlFoto = await enviarArquivoCloudinary(file);
-        await set(ref(db, `usuarios/${usuarioAtual}/foto`), urlFoto);
-
-        avatarImg.src = urlFoto;
-        alert("Foto atualizada!");
-      } catch (err) {
-        alert("Erro ao enviar foto: " + err.message);
-      } finally {
-        avatarImg.style.opacity = '1';
-        textLabel.innerText = "(Mudar foto)";
-        document.getElementById('fileInput').value = '';
-      }
-    };
-
-    window.triggerMidiaPostUpload = function() { document.getElementById('postFileInput').click(); };
-
-    window.carregarPreviaMidiaPost = function(e) {
-      const file = e.target.files[0];
-      if (!file) return;
-
-      arquivoSelecionado = file;
-      document.getElementById('postMediaPreviewContainer').classList.remove('hidden');
-      const objectUrl = URL.createObjectURL(file);
-
-      const img = document.getElementById('postImagePreview');
-      const vid = document.getElementById('postVideoPreview');
-
-      if (file.type.startsWith('video/')) {
-        tipoMidiaPost = 'video';
-        img.classList.add('hidden');
-        img.src = '';
-        vid.src = objectUrl;
-        vid.classList.remove('hidden');
-        vid.load();
-      } else {
-        tipoMidiaPost = 'imagem';
-        vid.pause();
-        vid.removeAttribute('src');
-        vid.classList.add('hidden');
-        img.src = objectUrl;
-        img.classList.remove('hidden');
-      }
-    };
-
-    window.removerMidiaPost = function() {
-      tipoMidiaPost = null;
-      arquivoSelecionado = null;
-      document.getElementById('postFileInput').value = '';
-      
-      const img = document.getElementById('postImagePreview');
-      img.src = ''; img.classList.add('hidden');
-
-      const vid = document.getElementById('postVideoPreview');
-      vid.pause(); vid.removeAttribute('src'); vid.load(); vid.classList.add('hidden');
-
-      document.getElementById('postMediaPreviewContainer').classList.add('hidden');
-    };
-
-    function enviarArquivoCloudinary(file) {
-      return new Promise((resolve, reject) => {
-        const ehVideo = file.type.startsWith('video/');
-        const tipoRecurso = ehVideo ? 'video' : 'image';
-        const url = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/${tipoRecurso}/upload`;
-
-        const formData = new FormData();
-        formData.append('file', file);
-        formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
-
-        const xhr = new XMLHttpRequest();
-        xhr.open('POST', url, true);
-
-        xhr.upload.onprogress = function(e) {
-          if (e.lengthComputable) {
-            const percent = Math.round((e.loaded / e.total) * 100);
-            const btnPub = document.getElementById('btnPublicar');
-            if (btnPub) btnPub.innerText = `Enviando (${percent}%)...`;
-          }
-        };
-
-        xhr.onload = function() {
-          let res = {};
-          try { res = JSON.parse(xhr.responseText); } catch(e) {}
-
-          if (xhr.status >= 200 && xhr.status < 300 && res.secure_url) {
-            resolve(res.secure_url);
-          } else {
-            const detalhe = (res.error && res.error.message) ? res.error.message : "Erro " + xhr.status;
-            reject(new Error(detalhe));
-          }
-        };
-
-        xhr.onerror = function() { reject(new Error("Erro de rede.")); };
-        xhr.timeout = 180000;
-        xhr.send(formData);
-      });
-    }
-
-    window.publicarPost = async function() {
-      const texto = document.getElementById('tweetContent').value.trim();
-      if (!texto && !arquivoSelecionado) {
-        alert("Escreva algo ou escolha uma mídia!");
-        return;
-      }
-
-      const btnPub = document.getElementById('btnPublicar');
-      btnPub.innerText = "Iniciando...";
-      btnPub.disabled = true;
-
-      try {
-        let urlMidia = null;
-        if (arquivoSelecionado) {
-          urlMidia = await enviarArquivoCloudinary(arquivoSelecionado);
-        }
-
-        btnPub.innerText = "Salvando...";
-        const novoPost = { autor: usuarioAtual, texto: texto, data: Date.now() };
-
-        if (urlMidia) {
-          novoPost.midia = urlMidia;
-          novoPost.tipoMidia = tipoMidiaPost;
-        }
-
-        await push(ref(db, 'posts'), novoPost);
-        document.getElementById('tweetContent').value = '';
-        removerMidiaPost();
-        alert("Post publicado!");
-
-      } catch (error) {
-        alert("Erro ao publicar: " + error.message);
-      } finally {
-        btnPub.innerText = "Publicar no Rock Chat";
-        btnPub.disabled = false;
-      }
-    };
-
-    window.abrirModalExclusao = function(postId) {
-      postParaDeletar = postId;
-      document.getElementById('confirmModal').classList.remove('hidden');
-    };
-
-    window.fecharModalExclusao = function() {
-      postParaDeletar = null;
-      document.getElementById('confirmModal').classList.add('hidden');
-    };
-
-    window.confirmarDeletarPost = function() {
-      if (!postParaDeletar) return;
-      remove(ref(db, `posts/${postParaDeletar}`))
-        .then(() => fecharModalExclusao())
-        .catch((err) => { alert("Erro: " + err.message); fecharModalExclusao(); });
-    };
-
-    function carregarPostsGerais() {
-      onValue(ref(db, 'posts'), (snapshot) => {
-        todosPosts = snapshot.val() || {};
-        if (perfilAberto) {
-          carregarPerfil(perfilAberto);
-        } else if (modoAtual === 'foryou') {
-          renderizarFeed(todosPosts, 'feedContainer', true);
-        } else if (modoAtual === 'feed') {
-          renderizarFeed(todosPosts, 'feedContainer', false);
-        }
-      });
-    }
-
-    function renderizarFeed(postsObj, containerId, ordenForYou = false) {
-      const container = document.getElementById(containerId);
-      container.innerHTML = '';
-      
-      let listaKeys = Object.keys(postsObj);
-
-      if (listaKeys.length === 0) {
-        container.innerHTML = '<div style="font-size:12px; color:#777;">Nenhuma mensagem.</div>';
-        return;
-      }
-
-      if (ordenForYou) {
-        listaKeys.sort((a, b) => {
-          const postA = postsObj[a];
-          const postB = postsObj[b];
-          const likesA = postA.likes ? Object.keys(postA.likes).length : 0;
-          const likesB = postB.likes ? Object.keys(postB.likes).length : 0;
-
-          if (likesA !== likesB) {
-            return likesB - likesA;
-          }
-          return postB.data - postA.data;
-        });
-      } else {
-        listaKeys.reverse();
-      }
-
-      listaKeys.forEach((postId, index) => {
-        const post = postsObj[postId];
-        const autorData = todosUsuarios[post.autor] || {};
-        const isVerificado = autorData.verificado === true;
-
-        const avatarUrl = autorData.foto || 'https://via.placeholder.com/36/ccc/666?text=Foto';
-        const likes = post.likes || {};
-        const totalLikes = Object.keys(likes).length;
-        const euCurti = likes[usuarioAtual] === true;
-        const dateStr = new Date(post.data).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
-        const badgeVerificado = isVerificado ? '<span class="badge-verified" title="Verificado">✔</span> <span class="sparkle-icon">✨</span>' : '';
-        const classePostVerificado = isVerificado ? 'post-verified' : '';
-        const classeAvatarVerificado = isVerificado ? 'avatar-verified' : '';
-
-        let forYouBadgeHTML = '';
-        if (ordenForYou && index === 0) {
-          forYouBadgeHTML = `<div class="foryou-badge">🔥 #1 EM DESTAQUE NO FOR YOU</div>`;
-        }
-
-        const botaoExcluir = (post.autor === usuarioAtual) 
-          ? `<button class="btn-delete" onclick="window.abrirModalExclusao('${postId}')">Excluir</button>` 
-          : '';
-
-        let midiaHTML = '';
-        if (post.midia) {
-          if (post.tipoMidia === 'video') {
-            midiaHTML = `<video src="${post.midia}" class="post-video-big" controls preload="metadata" playsinline></video>`;
-          } else {
-            midiaHTML = `<img src="${post.midia}" class="post-image-big">`;
-          }
-        }
-
-        const textoHTML = post.texto ? `<div class="post-content">${post.texto}</div>` : '';
-
-        const comentarios = post.comentarios || {};
-        let comentariosHTML = '';
-        Object.keys(comentarios).forEach(cId => {
-          const com = comentarios[cId];
-          const comAutorData = todosUsuarios[com.autor] || {};
-          const comVerificado = comAutorData.verificado === true ? '<span class="badge-verified">✔</span>' : '';
-          const comLikes = com.likes || {};
-          const totalComLikes = Object.keys(comLikes).length;
-          const euCurtiCom = comLikes[usuarioAtual] === true;
-
-          comentariosHTML += `
-            <div class="comment-item">
-              <div><strong>@${com.autor}${comVerificado}:</strong> ${com.texto}</div>
-              <div style="margin-top: 4px;">
-                <button style="font-size: 10px; padding: 2px 6px;" onclick="toggleCurtidaComentario('${postId}', '${cId}', ${euCurtiCom})">
-                  ${euCurtiCom ? '❤️ Curtido' : '🤍 Curtir'} (${totalComLikes})
+            <div class="flex items-center gap-2">
+                <button id="btn-loja-selo" class="bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 px-3 py-1.5 rounded-xl text-xs font-medium text-blue-400 flex items-center gap-1 transition">
+                    <i class="fa-solid fa-certificate"></i> Selo Verificado
                 </button>
-              </div>
+                <button id="btn-logout" class="bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 p-2 rounded-xl text-zinc-400 hover:text-red-400 transition">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                </button>
             </div>
-          `;
+        </header>
+
+        <!-- Navegação de Abas -->
+        <nav class="grid grid-cols-3 border-b border-zinc-900 text-center font-medium text-sm">
+            <button data-tab="feed" class="tab-btn py-3 text-blue-500 border-b-2 border-blue-500 transition">Feed</button>
+            <button data-tab="foryou" class="tab-btn py-3 text-zinc-400 hover:text-zinc-200 transition">For You</button>
+            <button data-tab="chamadas" class="tab-btn py-3 text-zinc-400 hover:text-zinc-200 transition flex items-center justify-center gap-1">
+                <i class="fa-solid fa-phone"></i> Chamadas
+            </button>
+        </nav>
+
+        <!-- Conteúdo das Abas -->
+        <main class="flex-1 overflow-y-auto p-4 space-y-4 pb-20">
+            
+            <!-- ABA FEED -->
+            <section id="tab-feed" class="space-y-4">
+                <!-- Caixa de Criação de Post -->
+                <div class="bg-zinc-900/50 border border-zinc-800/80 rounded-2xl p-4">
+                    <textarea id="post-text" placeholder="O que está acontecendo no mundo do rock?" rows="3" class="w-full bg-transparent resize-none focus:outline-none text-zinc-100 placeholder-zinc-500 text-sm"></textarea>
+                    
+                    <div id="post-preview-container" class="hidden relative mb-3 rounded-xl overflow-hidden bg-black max-h-60 flex items-center justify-center">
+                        <!-- Preview de mídia -->
+                    </div>
+
+                    <div class="flex justify-between items-center pt-3 border-t border-zinc-800/60">
+                        <div class="flex gap-2">
+                            <label class="cursor-pointer bg-zinc-800 hover:bg-zinc-700 text-zinc-300 px-3 py-1.5 rounded-xl text-xs font-medium transition flex items-center gap-1.5">
+                                <i class="fa-solid fa-image text-blue-400"></i> Mídia
+                                <input type="file" id="post-file" accept="image/*,video/*" class="hidden">
+                            </label>
+                        </div>
+                        <button id="btn-publish" class="bg-blue-600 hover:bg-blue-500 text-white font-bold px-5 py-2 rounded-xl text-xs transition shadow-lg shadow-blue-600/20">Publicar</button>
+                    </div>
+                </div>
+
+                <!-- Lista de Posts do Feed -->
+                <div id="posts-container" class="space-y-4">
+                    <!-- Inserido dinamicamente via JS -->
+                </div>
+            </section>
+
+            <!-- ABA FOR YOU -->
+            <section id="tab-foryou" class="hidden space-y-4">
+                <div class="bg-gradient-to-r from-blue-900/20 to-indigo-900/20 border border-blue-500/20 rounded-2xl p-4 text-center">
+                    <h3 class="font-bold text-blue-400 text-sm"><i class="fa-solid fa-fire"></i> Destaques & Recomendações</h3>
+                    <p class="text-xs text-zinc-400 mt-1">As postagens mais curtidas e engajadas da comunidade aparecem aqui.</p>
+                </div>
+                <div id="foryou-container" class="space-y-4">
+                    <!-- Inserido dinamicamente via JS -->
+                </div>
+            </section>
+
+            <!-- ABA CHAMADAS -->
+            <section id="tab-chamadas" class="hidden space-y-4">
+                <div class="bg-zinc-900/50 border border-zinc-800 rounded-2xl p-4">
+                    <h3 class="font-bold text-sm mb-2"><i class="fa-solid fa-video text-blue-500"></i> Iniciar Ligação</h3>
+                    <p class="text-xs text-zinc-400 mb-4">Digite o nome do usuário exato para realizar uma chamada de voz/vídeo simulada com ringtone e vibração.</p>
+                    <div class="flex gap-2">
+                        <input type="text" id="target-username-call" placeholder="Nome do usuário (ex: maria)" class="flex-1 bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500">
+                        <button id="btn-start-call" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-4 py-2.5 rounded-xl text-sm transition flex items-center gap-2">
+                            <i class="fa-solid fa-phone"></i> Ligar
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- MODAL DE LOJA DE SELO VERIFICADO -->
+    <div id="modal-selo" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 w-full max-w-md relative">
+            <button id="close-modal-selo" class="absolute top-4 right-4 text-zinc-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+            <div class="text-center mb-6">
+                <div class="inline-flex p-3 bg-blue-500/10 border border-blue-500/30 rounded-2xl text-blue-400 text-2xl mb-2">
+                    <i class="fa-solid fa-certificate"></i>
+                </div>
+                <h3 class="text-xl font-bold">Obtenha o Selo Verificado</h3>
+                <p class="text-xs text-zinc-400 mt-1">Borda brilhante no perfil, ícone exclusivo e prestígio na rede.</p>
+            </div>
+            
+            <div class="bg-zinc-950 p-4 rounded-2xl border border-zinc-800 space-y-3 mb-4 text-sm">
+                <div class="flex justify-between"><span class="text-zinc-400">Valor da Taxa:</span> <span class="font-bold text-emerald-400">R$ 10,00</span></div>
+                <div class="flex justify-between"><span class="text-zinc-400">Chave Pix (E-mail):</span> <span class="font-mono text-blue-400">rockchat@pix.com</span></div>
+            </div>
+
+            <div class="space-y-3">
+                <label class="block text-xs font-semibold text-zinc-400">Cole o ID ou Comprovante da Transação Pix:</label>
+                <input type="text" id="input-pix-id" placeholder="Ex: E123456782026..." class="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500">
+                <button id="btn-enviar-pix" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl transition text-sm">Enviar Comprovante para Análise</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE CHAMADA ATIVA (EM ANDAMENTO) -->
+    <div id="modal-chamada-ativa" class="hidden fixed inset-0 bg-zinc-950 z-[999999] flex flex-col items-center justify-between p-6">
+        <div class="text-center pt-10">
+            <div id="call-avatar" class="w-24 h-24 rounded-full bg-zinc-800 border-4 border-blue-500 flex items-center justify-center text-3xl font-bold mx-auto mb-4 shadow-xl shadow-blue-500/20">?</div>
+            <h2 id="call-peer-name" class="text-2xl font-bold">Usuário</h2>
+            <p id="call-status-text" class="text-sm text-emerald-400 mt-1">Conectado na chamada...</p>
+        </div>
+
+        <!-- Chat interno da chamada -->
+        <div class="w-full max-w-md bg-zinc-900/40 border border-zinc-800/80 rounded-2xl flex flex-col h-48 p-3 overflow-hidden">
+            <div id="call-messages" class="flex-1 overflow-y-auto space-y-2 text-xs mb-2">
+                <!-- Mensagens da chamada -->
+            </div>
+            <div class="flex gap-2">
+                <input type="text" id="call-input-msg" placeholder="Enviar mensagem na chamada..." class="flex-1 bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-blue-500">
+                <button id="call-btn-send" class="bg-blue-600 px-3 py-2 rounded-xl text-xs font-bold">Enviar</button>
+            </div>
+        </div>
+
+        <div class="pb-10">
+            <button id="btn-encerrar-chamada" class="bg-red-600 hover:bg-red-500 text-white w-16 h-16 rounded-full flex items-center justify-center text-2xl shadow-lg shadow-red-600/40 transition">
+                <i class="fa-solid fa-phone-slash"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- SCRIPTS FIREBASE & LOGICA -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getDatabase, ref, set, push, onValue, update, remove, get, query, orderByChild } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+        // CONFIGURAÇÃO DO FIREBASE (Insira suas credenciais ou use o padrão de teste/local)
+        const firebaseConfig = {
+            databaseURL: "https://rockchat-default-rtdb.firebaseio.com/"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        // CONFIGURAÇÃO DO CLOUDINARY (Substitua pelo seu preset unsigned)
+        const CLOUDINARY_UPLOAD_PRESET = "CLOUDINARY_UPLOAD_PRESET";
+        const CLOUDINARY_CLOUD_NAME = "demo";
+
+        // ESTADO GLOBAL DA APLICAÇÃO
+        let currentUser = null;
+        let currentTab = 'feed';
+        let selectedFile = null;
+        let activeCallId = null;
+        let activeCallListener = null;
+
+        // ELEMENTOS DO DOM
+        const authScreen = document.getElementById('auth-screen');
+        const appScreen = document.getElementById('app-screen');
+        const inputUsername = document.getElementById('input-username');
+        const inputPassword = document.getElementById('input-password');
+        const btnLogin = document.getElementById('btn-login');
+        const btnRegister = document.getElementById('btn-register');
+        const btnLogout = document.getElementById('btn-logout');
+        const headerUsername = document.getElementById('header-username');
+        const headerAvatar = document.getElementById('header-avatar');
+        
+        // GATILHO DE ÁUDIO INICIAL (Desbloqueio de Autoplay do Navegador)
+        document.addEventListener('click', () => {
+            const audio = document.getElementById('ringtoneAudio');
+            if (audio && audio.paused) {
+                audio.play().then(() => {
+                    audio.pause();
+                    audio.currentTime = 0;
+                }).catch(() => {});
+            }
+        }, { once: true });
+
+        // CADASTRO
+        btnRegister.addEventListener('click', async () => {
+            const u = inputUsername.value.trim().toLowerCase();
+            const p = inputPassword.value.trim();
+            if (!u || !p) return alert('Preencha todos os campos!');
+
+            const userRef = ref(db, `usuarios/${u}`);
+            const snap = await get(userRef);
+            if (snap.exists()) return alert('Este nome de usuário já existe!');
+
+            await set(userRef, { username: u, password: p, verified: false, createdAt: Date.now() });
+            alert('Cadastro realizado com sucesso! Faça login.');
         });
 
-        const postHTML = `
-          <div class="post-box ${classePostVerificado}">
-            ${forYouBadgeHTML}
-            <div class="post-header">
-              <img class="avatar-mini ${classeAvatarVerificado}" src="${avatarUrl}" onclick="abrirPerfil('${post.autor}')">
-              <div>
-                <strong style="cursor:pointer; font-size:13px;" onclick="abrirPerfil('${post.autor}')">@${post.autor}${badgeVerificado}</strong>
-                <span style="font-size:10px; color:#666;"> - ${dateStr}</span>
-              </div>
-            </div>
-            ${textoHTML}
-            ${midiaHTML}
-            <div class="post-footer">
-              <button onclick="toggleCurtida('${postId}', ${euCurti})">
-                ${euCurti ? '❤️ Curtido' : '🤍 Curtir'} (${totalLikes})
-              </button>
-              ${botaoExcluir}
-            </div>
+        // LOGIN
+        btnLogin.addEventListener('click', async () => {
+            const u = inputUsername.value.trim().toLowerCase();
+            const p = inputPassword.value.trim();
+            if (!u || !p) return alert('Preencha todos os campos!');
 
-            <div class="comments-section">
-              <div style="font-size: 12px; font-weight: bold; margin-bottom: 5px;">Comentários:</div>
-              <div>${comentariosHTML || '<div style="font-size:11px; color:#777;">Nenhum comentário.</div>'}</div>
-              <div style="display: flex; gap: 5px; margin-top: 6px;">
-                <input type="text" id="commentInput-${postId}" placeholder="Escreva um comentário..." style="flex: 1; font-size: 12px;">
-                <button style="font-size: 11px;" onclick="enviarComentario('${postId}')">Comentar</button>
-              </div>
-            </div>
-          </div>
-        `;
-        container.innerHTML += postHTML;
-      });
-    }
+            const userRef = ref(db, `usuarios/${u}`);
+            const snap = await get(userRef);
+            if (!snap.exists() || snap.val().password !== p) {
+                return alert('Usuário ou senha inválidos!');
+            }
 
-    window.toggleCurtida = function(postId, jaCurti) {
-      const likeRef = ref(db, `posts/${postId}/likes/${usuarioAtual}`);
-      if (jaCurti) remove(likeRef); else set(likeRef, true);
-    };
+            currentUser = snap.val();
+            authScreen.classList.add('hidden');
+            appScreen.classList.remove('hidden');
+            initApp();
+        });
 
-    window.enviarComentario = function(postId) {
-      const input = document.getElementById(`commentInput-${postId}`);
-      const texto = input.value.trim();
-      if (!texto) return;
-      push(ref(db, `posts/${postId}/comentarios`), { autor: usuarioAtual, texto: texto, data: Date.now() })
-        .then(() => { input.value = ''; });
-    };
+        btnLogout.addEventListener('click', () => {
+            currentUser = null;
+            appScreen.classList.add('hidden');
+            authScreen.classList.remove('hidden');
+            if (activeCallListener) activeCallListener();
+        });
 
-    window.toggleCurtidaComentario = function(postId, comentarioId, jaCurti) {
-      const likeRef = ref(db, `posts/${postId}/comentarios/${comentarioId}/likes/${usuarioAtual}`);
-      if (jaCurti) remove(likeRef); else set(likeRef, true);
-    };
+        // NAVEGAÇÃO ENTRE ABAS
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                document.querySelectorAll('.tab-btn').forEach(b => {
+                    b.classList.remove('text-blue-500', 'border-b-2', 'border-blue-500');
+                    b.classList.add('text-zinc-400');
+                });
+                btn.classList.add('text-blue-500', 'border-b-2', 'border-blue-500');
+                btn.classList.remove('text-zinc-400');
 
-    window.buscarPerfis = function() {
-      const query = document.getElementById('searchInput').value.trim().toLowerCase();
-      const resultsDiv = document.getElementById('searchResults');
-      resultsDiv.innerHTML = '';
-      if (!query) return;
+                const targetTab = btn.getAttribute('data-tab');
+                document.getElementById('tab-feed').classList.add('hidden');
+                document.getElementById('tab-foryou').classList.add('hidden');
+                document.getElementById('tab-chamadas').classList.add('hidden');
+                document.getElementById(`tab-${targetTab}`).classList.remove('hidden');
+                currentTab = targetTab;
+            });
+        });
 
-      Object.keys(todosUsuarios).forEach(nomeUser => {
-        if (nomeUser.includes(query)) {
-          const u = todosUsuarios[nomeUser];
-          const verifBadge = u.verificado ? '<span class="badge-verified">✔</span> ✨' : '';
-          const div = document.createElement('div');
-          div.style.padding = '4px'; div.style.cursor = 'pointer';
-          div.onclick = () => { abrirPerfil(nomeUser); document.getElementById('searchView').classList.add('hidden'); };
-          div.innerHTML = `<span style="font-size:13px;">👤 <strong>@${nomeUser}${verifBadge}</strong></span>`;
-          resultsDiv.appendChild(div);
+        function initApp() {
+            headerUsername.innerHTML = `${currentUser.username} ${currentUser.verified ? '<span class="verified-badge"><i class="fa-solid fa-circle-check"></i></span>' : ''}`;
+            headerAvatar.textContent = currentUser.username.charAt(0).toUpperCase();
+            if (currentUser.verified) {
+                headerAvatar.classList.add('profile-border-glow');
+            }
+
+            carregarPosts();
+            ouvirChamadasRecebidas();
         }
-      });
-    };
 
-    window.abrirMeuPerfil = function() { abrirPerfil(usuarioAtual); };
+        // UPLOAD DE MÍDIA
+        const postFile = document.getElementById('post-file');
+        const postPreviewContainer = document.getElementById('post-preview-container');
+        
+        postFile.addEventListener('change', (e) => {
+            selectedFile = e.target.files[0];
+            if (selectedFile) {
+                const url = URL.createObjectURL(selectedFile);
+                postPreviewContainer.innerHTML = selectedFile.type.startsWith('video') 
+                    ? `<video src="${url}" controls class="w-full max-h-60 object-cover"></video>`
+                    : `<img src="${url}" class="w-full max-h-60 object-cover">`;
+                postPreviewContainer.classList.remove('hidden');
+            }
+        });
 
-    window.abrirPerfil = function(nomeUser) {
-      perfilAberto = nomeUser;
-      esconderTodasAsAbas();
-      document.getElementById('profileView').classList.remove('hidden');
-      carregarPerfil(nomeUser);
-    };
+        async function uploadCloudinary(file) {
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+            const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/upload`, { method: 'POST', body: formData });
+            const data = await res.json();
+            return data.secure_url;
+        }
 
-    function carregarPerfil(nomeUser) {
-      const uData = todosUsuarios[nomeUser] || {};
-      const isVerificado = uData.verificado === true;
-      const verifBadge = isVerificado ? '<span class="badge-verified">✔</span> <span class="sparkle-icon">✨</span>' : '';
+        // CRIAR POST
+        document.getElementById('btn-publish').addEventListener('click', async () => {
+            const text = document.getElementById('post-text').value.trim();
+            if (!text && !selectedFile) return alert('Escreva algo ou adicione uma mídia!');
 
-      document.getElementById('profName').innerHTML = '@' + nomeUser + ' ' + verifBadge;
-      document.getElementById('profAvatar').src = uData.foto || 'https://via.placeholder.com/70/ccc/666?text=Foto';
+            let mediaUrl = null;
+            let mediaType = null;
+            if (selectedFile) {
+                mediaUrl = await uploadCloudinary(selectedFile);
+                mediaType = selectedFile.type.startsWith('video') ? 'video' : 'image';
+            }
 
-      const profCard = document.getElementById('profileCardBox');
-      const profAvatar = document.getElementById('profAvatar');
+            const postsRef = ref(db, 'posts');
+            await push(postsRef, {
+                author: currentUser.username,
+                text,
+                mediaUrl,
+                mediaType,
+                likes: 0,
+                likedBy: {},
+                createdAt: Date.now()
+            });
 
-      if (isVerificado) {
-        profCard.classList.add('profile-verified');
-        profAvatar.classList.add('avatar-verified');
-      } else {
-        profCard.classList.remove('profile-verified');
-        profAvatar.classList.remove('avatar-verified');
-      }
+            document.getElementById('post-text').value = '';
+            selectedFile = null;
+            postPreviewContainer.classList.add('hidden');
+            postPreviewContainer.innerHTML = '';
+            postFile.value = '';
+        });
 
-      const followBtn = document.getElementById('profFollowBtn');
-      const msgBtn = document.getElementById('profMsgBtn');
-      const callBtn = document.getElementById('profCallBtn');
+        // CARREGAR POSTS (FEED & FOR YOU)
+        function carregarPosts() {
+            const postsRef = ref(db, 'posts');
+            onValue(postsRef, async (snap) => {
+                const data = snap.val() || {};
+                const postsArray = Object.keys(data).map(id => ({ id, ...data[id] }));
+                postsArray.sort((a, b) => b.createdAt - a.createdAt);
 
-      if (nomeUser === usuarioAtual) {
-        followBtn.classList.add('hidden');
-        msgBtn.classList.add('hidden');
-        callBtn.classList.add('hidden');
-      } else {
-        followBtn.classList.remove('hidden');
-        msgBtn.classList.remove('hidden');
-        callBtn.classList.remove('hidden');
-        const seguidores = uData.seguidores || {};
-        followBtn.innerText = (seguidores[usuarioAtual] === true) ? "Parar de seguir" : "Seguir perfil";
-      }
+                // Buscar status verificado dos autores
+                const usersSnap = await get(ref(db, 'usuarios'));
+                const usersData = usersSnap.val() || {};
 
-      document.getElementById('profSeguidores').innerText = uData.seguidores ? Object.keys(uData.seguidores).length : 0;
-      document.getElementById('profSeguindo').innerText = uData.seguindo ? Object.keys(uData.seguindo).length : 0;
+                renderFeed(postsArray, usersData);
+                renderForYou(postsArray, usersData);
+            });
+        }
 
-      const postsPerfil = {};
-      Object.keys(todosPosts).forEach(k => {
-        if (todosPosts[k].autor === nomeUser) postsPerfil[k] = todosPosts[k];
-      });
-      renderizarFeed(postsPerfil, 'profileFeedContainer', false);
-    }
+        function renderFeed(posts, usersData) {
+            const container = document.getElementById('posts-container');
+            container.innerHTML = '';
 
-    window.toggleSeguir = function() {
-      if (!perfilAberto || perfilAberto === usuarioAtual) return;
-      const uData = todosUsuarios[perfilAberto] || {};
-      const euSigo = uData.seguidores && uData.seguidores[usuarioAtual] === true;
-      const refSeguidor = ref(db, `usuarios/${perfilAberto}/seguidores/${usuarioAtual}`);
-      const refSeguindo = ref(db, `usuarios/${usuarioAtual}/seguindo/${perfilAberto}`);
+            if (posts.length === 0) {
+                container.innerHTML = `<p class="text-center text-zinc-500 text-xs py-8">Nenhuma publicação encontrada.</p>`;
+                return;
+            }
 
-      if (euSigo) { remove(refSeguidor); remove(refSeguindo); } 
-      else { set(refSeguidor, true); set(refSeguindo, true); }
-    };
-  </script>
+            posts.forEach(post => {
+                const isVerified = usersData[post.author]?.verified;
+                const isLiked = post.likedBy && post.likedBy[currentUser.username];
+                
+                const card = document.createElement('div');
+                card.className = "bg-zinc-900/50 border border-zinc-800 rounded-2xl p-4 space-y-3";
+                card.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <div class="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center font-bold text-blue-400 text-xs ${isVerified ? 'profile-border-glow' : ''}">${post.author.charAt(0).toUpperCase()}</div>
+                            <span class="font-bold text-sm flex items-center gap-1">${post.author} ${isVerified ? '<span class="verified-badge"><i class="fa-solid fa-circle-check"></i></span>' : ''}</span>
+                        </div>
+                        <span class="text-xs text-zinc-500">${new Date(post.createdAt).toLocaleDateString()}</span>
+                    </div>
+                    ${post.text ? `<p class="text-sm text-zinc-200">${post.text}</p>` : ''}
+                    ${post.mediaUrl ? `<div class="rounded-xl overflow-hidden bg-black max-h-80 flex items-center justify-center">${post.mediaType === 'video' ? `<video src="${post.mediaUrl}" controls class="w-full max-h-80 object-cover"></video>` : `<img src="${post.mediaUrl}" class="w-full max-h-80 object-cover">`}</div>` : ''}
+                    
+                    <div class="flex items-center gap-4 pt-2 border-t border-zinc-800/60 text-xs text-zinc-400">
+                        <button onclick="toggleLike('${post.id}')" class="flex items-center gap-1.5 hover:text-red-500 transition ${isLiked ? 'text-red-500 font-bold' : ''}">
+                            <i class="${isLiked ? 'fa-solid' : 'fa-regular'} fa-heart"></i> ${post.likes || 0}
+                        </button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function renderForYou(posts, usersData) {
+            const container = document.getElementById('foryou-container');
+            container.innerHTML = '';
+            
+            // Ordenar por mais curtidas
+            const sorted = [...posts].sort((a, b) => (b.likes || 0) - (a.likes || 0));
+
+            if (sorted.length === 0) {
+                container.innerHTML = `<p class="text-center text-zinc-500 text-xs py-8">Nenhum destaque no momento.</p>`;
+                return;
+            }
+
+            sorted.forEach(post => {
+                const isVerified = usersData[post.author]?.verified;
+                const card = document.createElement('div');
+                card.className = "bg-zinc-900/50 border border-zinc-800 rounded-2xl p-4 space-y-3";
+                card.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <div class="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center font-bold text-blue-400 text-xs">${post.author.charAt(0).toUpperCase()}</div>
+                            <span class="font-bold text-sm flex items-center gap-1">${post.author} ${isVerified ? '<span class="verified-badge"><i class="fa-solid fa-circle-check"></i></span>' : ''}</span>
+                        </div>
+                        <span class="text-xs text-blue-400 font-bold"><i class="fa-solid fa-fire"></i> ${post.likes || 0} curtidas</span>
+                    </div>
+                    ${post.text ? `<p class="text-sm text-zinc-200">${post.text}</p>` : ''}
+                    ${post.mediaUrl ? `<div class="rounded-xl overflow-hidden bg-black max-h-60 flex items-center justify-center">${post.mediaType === 'video' ? `<video src="${post.mediaUrl}" controls class="w-full max-h-60 object-cover"></video>` : `<img src="${post.mediaUrl}" class="w-full max-h-60 object-cover">`}</div>` : ''}
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        window.toggleLike = async function(postId) {
+            const postRef = ref(db, `posts/${postId}`);
+            const snap = await get(postRef);
+            if (!snap.exists()) return;
+            const post = snap.val();
+            const likedBy = post.likedBy || {};
+            let likes = post.likes || 0;
+
+            if (likedBy[currentUser.username]) {
+                delete likedBy[currentUser.username];
+                likes = Math.max(0, likes - 1);
+            } else {
+                likedBy[currentUser.username] = true;
+                likes += 1;
+            }
+
+            await update(postRef, { likes, likedBy });
+        }
+
+        // SISTEMA DE LOJA DE SELO & PIX
+        const modalSelo = document.getElementById('modal-selo');
+        document.getElementById('btn-loja-selo').addEventListener('click', () => modalSelo.classList.remove('hidden'));
+        document.getElementById('close-modal-selo').addEventListener('click', () => modalSelo.classList.add('hidden'));
+
+        document.getElementById('btn-enviar-pix',).addEventListener('click', async () => {
+            const pixId = document.getElementById('input-pix-id').value.trim();
+            if (!pixId) return alert('Insira o ID/comprovante do Pix!');
+
+            const solicitacaoRef = push(ref(db, 'solicitacoes_verificado'));
+            await set(solicitacaoRef, {
+                username: currentUser.username,
+                pixId,
+                status: 'pendente',
+                createdAt: Date.now()
+            });
+
+            alert('Comprovante enviado para análise! O selo será ativado em breve.');
+            modalSelo.classList.add('hidden');
+        });
+
+        // ==========================================
+        // SISTEMA ROBUSTO DE CHAMADAS E NOTIFICAÇÃO
+        // ==========================================
+        
+        document.getElementById('btn-start-call').addEventListener('click', async () => {
+            const target = document.getElementById('target-username-call').value.trim().toLowerCase();
+            if (!target || target === currentUser.username) return alert('Digite um nome de usuário válido para ligar!');
+
+            const targetSnap = await get(ref(db, `usuarios/${target}`));
+            if (!targetSnap.exists()) return alert('Usuário não encontrado!');
+
+            const callRef = push(ref(db, 'ligacoes'));
+            const callId = callRef.key;
+
+            await set(callRef, {
+                id: callId,
+                caller: currentUser.username,
+                receiver: target,
+                status: 'chamando',
+                createdAt: Date.now()
+            });
+
+            abrirTelaChamada(callId, target, 'Chamando...');
+        });
+
+        function ouvirChamadasRecebidas() {
+            const ligacoesRef = ref(db, 'ligacoes');
+            activeCallListener = onValue(ligacoesRef, (snap) => {
+                const data = snap.val() || {};
+                Object.keys(data).forEach(id => {
+                    const call = data[id];
+                    if (call.receiver === currentUser.username && call.status === 'chamando' && !activeCallId) {
+                        dispararAlertaChamadaRecebida(call);
+                    }
+                });
+            });
+        }
+
+        function dispararAlertaChamadaRecebida(call) {
+            // Tocar o áudio com força total
+            const audio = document.getElementById('ringtoneAudio');
+            if (audio) {
+                audio.currentTime = 0;
+                audio.play().catch(e => console.log("Áudio bloqueado:", e));
+            }
+
+            // Tentar vibrar o dispositivo (se suportado)
+            if ("vibrate" in navigator) {
+                try { navigator.vibrate([500, 200, 500, 200, 500]); } catch(e){}
+            }
+
+            // Exibir Banner Urgente
+            const modalUrgente = document.getElementById('modal-chamada-urgente');
+            document.getElementById('chamador-texto').textContent = `Chamada recebida de @${call.caller}`;
+            modalUrgente.classList.remove('hidden');
+
+            document.getElementById('btn-atender-chamada').onclick = async () => {
+                pararAlertasChamada();
+                await update(ref(db, `ligacoes/${call.id}`), { status: 'ativa' });
+                abrirTelaChamada(call.id, call.caller, 'Conectado');
+            };
+
+            document.getElementById('btn-recusar-chamada').onclick = async () => {
+                pararAlertasChamada();
+                await update(ref(db, `ligacoes/${call.id}`), { status: 'recusada' });
+            };
+        }
+
+        function pararAlertasChamada() {
+            const audio = document.getElementById('ringtoneAudio');
+            if (audio) {
+                audio.pause();
+                audio.currentTime = 0;
+            }
+            if ("vibrate" in navigator) {
+                try { navigator.vibrate(0); } catch(e){}
+            }
+            document.getElementById('modal-chamada-urgente').classList.add('hidden');
+        }
+
+        function abrirTelaChamada(callId, peerName, statusText) {
+            activeCallId = callId;
+            pararAlertasChamada();
+            
+            const modal = document.getElementById('modal-chamada-ativa');
+            document.getElementById('call-peer-name').textContent = peerName;
+            document.getElementById('call-avatar').textContent = peerName.charAt(0).toUpperCase();
+            document.getElementById('call-status-text').textContent = statusText;
+            modal.classList.remove('hidden');
+
+            // Ouvir atualizações da chamada
+            const callRef = ref(db, `ligacoes/${callId}`);
+            onValue(callRef, (snap) => {
+                const call = snap.val();
+                if (!call || call.status === 'recusada' || call.status === 'encerrada') {
+                    fecharTelaChamada();
+                }
+            });
+
+            // Ouvir mensagens da chamada
+            const msgsRef = ref(db, `ligacoes/${callId}/mensagens`);
+            onValue(msgsRef, (snap) => {
+                const msgs = snap.val() || {};
+                const container = document.getElementById('call-messages');
+                container.innerHTML = '';
+                Object.values(msgs).forEach(m => {
+                    const div = document.createElement('div');
+                    div.className = m.sender === currentUser.username ? 'text-right text-blue-400' : 'text-left text-zinc-300';
+                    div.innerHTML = `<span class="font-bold">@${m.sender}:</span> ${m.text}`;
+                    container.appendChild(div);
+                });
+                container.scrollTop = container.scrollHeight;
+            });
+        }
+
+        document.getElementById('call-btn-send').onclick = async () => {
+            const input = document.getElementById('call-input-msg');
+            const text = input.value.trim();
+            if (!text || !activeCallId) return;
+
+            await push(ref(db, `ligacoes/${activeCallId}/mensagens`), {
+                sender: currentUser.username,
+                text,
+                createdAt: Date.now()
+            });
+            input.value = '';
+        };
+
+        document.getElementById('btn-encerrar-chamada').onclick = async () => {
+            if (activeCallId) {
+                await update(ref(db, `ligacoes/${activeCallId}`), { status: 'encerrada' });
+            }
+            fecharTelaChamada();
+        };
+
+        function fecharTelaChamada() {
+            activeCallId = null;
+            document.getElementById('modal-chamada-ativa').classList.add('hidden');
+            pararAlertasChamada();
+        }
+
+    </script>
 </body>
 </html>
