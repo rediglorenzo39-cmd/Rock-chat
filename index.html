@@ -3,20 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rock Chat - Completo</title>
-    <!-- Tailwind CSS para estilização moderna e rápida -->
+    <title>Rock Chat</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome para ícones -->
+    <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        @keyframes pular {
-            0% { transform: translateX(-50%) translateY(0); }
-            100% { transform: translateX(-50%) translateY(-6px); }
-        }
-        .animate-bounce-custom {
-            animation: pular 0.5s infinite alternate;
-        }
-        /* Estilos adicionais para selos e animações */
         .verified-badge {
             display: inline-flex;
             align-items: center;
@@ -32,38 +24,25 @@
 </head>
 <body class="bg-zinc-950 text-zinc-100 min-h-screen flex flex-col font-sans select-none">
 
-    <!-- ELEMENTO DE ÁUDIO OCULTO PARA O RINGTONE -->
+    <!-- ELEMENTO DE ÁUDIO PARA O RINGTONE DE CHAMADA -->
     <audio id="ringtoneAudio" preload="auto" loop src="https://actions.google.com/sounds/v1/alarms/digital_watch_alarm_long.ogg"></audio>
-
-    <!-- CONTAINER DE ALERTAS DE CHAMADA URGENTE (FORÇADO NA TELA) -->
-    <div id="modal-chamada-urgente" class="hidden fixed top-5 left-1/2 transform -translate-x-1/2 bg-red-600 text-white px-6 py-4 rounded-2xl z-[99999] shadow-2xl font-bold flex items-center gap-4 animate-bounce-custom border-2 border-red-400">
-        <i class="fa-solid fa-phone-volume text-2xl animate-spin"></i>
-        <div class="flex flex-col">
-            <span id="chamador-texto" class="text-sm">Chamada recebida!</span>
-            <span class="text-xs text-red-200 font-normal">Toque para atender</span>
-        </div>
-        <div class="flex gap-2 ml-2">
-            <button id="btn-atender-chamada" class="bg-green-500 hover:bg-green-600 text-white px-3 py-1.5 rounded-xl text-sm transition shadow">Atender</button>
-            <button id="btn-recusar-chamada" class="bg-zinc-800 hover:bg-zinc-900 text-white px-3 py-1.5 rounded-xl text-sm transition shadow">Recusar</button>
-        </div>
-    </div>
 
     <!-- TELA DE LOGIN / CADASTRO -->
     <div id="auth-screen" class="fixed inset-0 bg-zinc-950 z-50 flex items-center justify-center p-4">
         <div class="bg-zinc-900 border border-zinc-800 rounded-3xl p-8 w-full max-w-md shadow-2xl">
             <div class="text-center mb-6">
                 <h1 class="text-3xl font-black tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-indigo-500">ROCK CHAT</h1>
-                <p class="text-zinc-400 text-sm mt-1">Conecte-se para interagir, postar e ligar.</p>
+                <p class="text-zinc-400 text-sm mt-1">Entre ou cadastre-se para conversar.</p>
             </div>
             
             <div class="space-y-4">
                 <div>
                     <label class="block text-xs font-semibold text-zinc-400 mb-1">NOME DE USUÁRIO</label>
-                    <input type="text" id="input-username" placeholder="Ex: joao_rock" class="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500 transition">
+                    <input type="text" id="input-username" placeholder="Seu nome" class="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500 transition">
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-zinc-400 mb-1">SENHA</label>
-                    <input type="password" id="input-password" placeholder="••••••••" class="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500 transition">
+                    <input type="password" id="input-password" placeholder="Sua senha" class="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500 transition">
                 </div>
                 
                 <div class="flex gap-3 pt-2">
@@ -110,13 +89,10 @@
             
             <!-- ABA FEED -->
             <section id="tab-feed" class="space-y-4">
-                <!-- Caixa de Criação de Post -->
                 <div class="bg-zinc-900/50 border border-zinc-800/80 rounded-2xl p-4">
-                    <textarea id="post-text" placeholder="O que está acontecendo no mundo do rock?" rows="3" class="w-full bg-transparent resize-none focus:outline-none text-zinc-100 placeholder-zinc-500 text-sm"></textarea>
+                    <textarea id="post-text" placeholder="No que você está pensando?" rows="3" class="w-full bg-transparent resize-none focus:outline-none text-zinc-100 placeholder-zinc-500 text-sm"></textarea>
                     
-                    <div id="post-preview-container" class="hidden relative mb-3 rounded-xl overflow-hidden bg-black max-h-60 flex items-center justify-center">
-                        <!-- Preview de mídia -->
-                    </div>
+                    <div id="post-preview-container" class="hidden relative mb-3 rounded-xl overflow-hidden bg-black max-h-60 flex items-center justify-center"></div>
 
                     <div class="flex justify-between items-center pt-3 border-t border-zinc-800/60">
                         <div class="flex gap-2">
@@ -129,30 +105,25 @@
                     </div>
                 </div>
 
-                <!-- Lista de Posts do Feed -->
-                <div id="posts-container" class="space-y-4">
-                    <!-- Inserido dinamicamente via JS -->
-                </div>
+                <div id="posts-container" class="space-y-4"></div>
             </section>
 
             <!-- ABA FOR YOU -->
             <section id="tab-foryou" class="hidden space-y-4">
                 <div class="bg-gradient-to-r from-blue-900/20 to-indigo-900/20 border border-blue-500/20 rounded-2xl p-4 text-center">
-                    <h3 class="font-bold text-blue-400 text-sm"><i class="fa-solid fa-fire"></i> Destaques & Recomendações</h3>
-                    <p class="text-xs text-zinc-400 mt-1">As postagens mais curtidas e engajadas da comunidade aparecem aqui.</p>
+                    <h3 class="font-bold text-blue-400 text-sm"><i class="fa-solid fa-fire"></i> Destaques</h3>
+                    <p class="text-xs text-zinc-400 mt-1">As postagens mais curtidas da comunidade.</p>
                 </div>
-                <div id="foryou-container" class="space-y-4">
-                    <!-- Inserido dinamicamente via JS -->
-                </div>
+                <div id="foryou-container" class="space-y-4"></div>
             </section>
 
             <!-- ABA CHAMADAS -->
             <section id="tab-chamadas" class="hidden space-y-4">
                 <div class="bg-zinc-900/50 border border-zinc-800 rounded-2xl p-4">
-                    <h3 class="font-bold text-sm mb-2"><i class="fa-solid fa-video text-blue-500"></i> Iniciar Ligação</h3>
-                    <p class="text-xs text-zinc-400 mb-4">Digite o nome do usuário exato para realizar uma chamada de voz/vídeo simulada com ringtone e vibração.</p>
+                    <h3 class="font-bold text-sm mb-2"><i class="fa-solid fa-phone text-blue-500"></i> Iniciar Chamada</h3>
+                    <p class="text-xs text-zinc-400 mb-4">Digite o nome de usuário exato para realizar uma ligação.</p>
                     <div class="flex gap-2">
-                        <input type="text" id="target-username-call" placeholder="Nome do usuário (ex: maria)" class="flex-1 bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500">
+                        <input type="text" id="target-username-call" placeholder="Nome do usuário" class="flex-1 bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500">
                         <button id="btn-start-call" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-4 py-2.5 rounded-xl text-sm transition flex items-center gap-2">
                             <i class="fa-solid fa-phone"></i> Ligar
                         </button>
@@ -171,55 +142,58 @@
                 <div class="inline-flex p-3 bg-blue-500/10 border border-blue-500/30 rounded-2xl text-blue-400 text-2xl mb-2">
                     <i class="fa-solid fa-certificate"></i>
                 </div>
-                <h3 class="text-xl font-bold">Obtenha o Selo Verificado</h3>
-                <p class="text-xs text-zinc-400 mt-1">Borda brilhante no perfil, ícone exclusivo e prestígio na rede.</p>
+                <h3 class="text-xl font-bold">Selo Verificado</h3>
+                <p class="text-xs text-zinc-400 mt-1">Destaque seu perfil com a borda brilhante e o selo oficial.</p>
             </div>
-            
-            <div class="bg-zinc-950 p-4 rounded-2xl border border-zinc-800 space-y-3 mb-4 text-sm">
-                <div class="flex justify-between"><span class="text-zinc-400">Valor da Taxa:</span> <span class="font-bold text-emerald-400">R$ 10,00</span></div>
-                <div class="flex justify-between"><span class="text-zinc-400">Chave Pix (E-mail):</span> <span class="font-mono text-blue-400">rockchat@pix.com</span></div>
-            </div>
-
             <div class="space-y-3">
-                <label class="block text-xs font-semibold text-zinc-400">Cole o ID ou Comprovante da Transação Pix:</label>
-                <input type="text" id="input-pix-id" placeholder="Ex: E123456782026..." class="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500">
-                <button id="btn-enviar-pix" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl transition text-sm">Enviar Comprovante para Análise</button>
+                <input type="text" id="input-pix-id" placeholder="Cole o ID do Pix" class="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500">
+                <button id="btn-enviar-pix" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl transition text-sm">Enviar Comprovante</button>
             </div>
         </div>
     </div>
 
-    <!-- MODAL DE CHAMADA ATIVA (EM ANDAMENTO) -->
+    <!-- MODAL DE CHAMADA RECEBIDA -->
+    <div id="modal-chamada-recebida" class="hidden fixed inset-0 bg-black/80 z-[99999] flex items-center justify-center p-4">
+        <div class="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 w-full max-w-sm text-center space-y-4 shadow-2xl">
+            <div class="w-20 h-20 bg-blue-500/20 border border-blue-500 text-blue-400 rounded-full flex items-center justify-center text-3xl mx-auto animate-pulse">
+                <i class="fa-solid fa-phone-volume"></i>
+            </div>
+            <div>
+                <h3 id="texto-chamada-recebida" class="text-lg font-bold">Chamada de Alguém</h3>
+                <p class="text-xs text-zinc-400 mt-1">Toque para aceitar ou recusar</p>
+            </div>
+            <div class="flex gap-3 pt-2">
+                <button id="btn-atender" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl text-sm transition">Atender</button>
+                <button id="btn-recusar" class="flex-1 bg-red-600 hover:bg-red-500 text-white font-bold py-3 rounded-xl text-sm transition">Recusar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE CHAMADA ATIVA -->
     <div id="modal-chamada-ativa" class="hidden fixed inset-0 bg-zinc-950 z-[999999] flex flex-col items-center justify-between p-6">
         <div class="text-center pt-10">
-            <div id="call-avatar" class="w-24 h-24 rounded-full bg-zinc-800 border-4 border-blue-500 flex items-center justify-center text-3xl font-bold mx-auto mb-4 shadow-xl shadow-blue-500/20">?</div>
             <h2 id="call-peer-name" class="text-2xl font-bold">Usuário</h2>
-            <p id="call-status-text" class="text-sm text-emerald-400 mt-1">Conectado na chamada...</p>
+            <p id="call-status-text" class="text-sm text-emerald-400 mt-1">Conectado...</p>
         </div>
-
-        <!-- Chat interno da chamada -->
-        <div class="w-full max-w-md bg-zinc-900/40 border border-zinc-800/80 rounded-2xl flex flex-col h-48 p-3 overflow-hidden">
-            <div id="call-messages" class="flex-1 overflow-y-auto space-y-2 text-xs mb-2">
-                <!-- Mensagens da chamada -->
-            </div>
+        <div class="w-full max-w-md bg-zinc-900/40 border border-zinc-800 rounded-2xl flex flex-col h-48 p-3 overflow-hidden">
+            <div id="call-messages" class="flex-1 overflow-y-auto space-y-2 text-xs mb-2"></div>
             <div class="flex gap-2">
-                <input type="text" id="call-input-msg" placeholder="Enviar mensagem na chamada..." class="flex-1 bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-blue-500">
+                <input type="text" id="call-input-msg" placeholder="Digite..." class="flex-1 bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-blue-500">
                 <button id="call-btn-send" class="bg-blue-600 px-3 py-2 rounded-xl text-xs font-bold">Enviar</button>
             </div>
         </div>
-
         <div class="pb-10">
-            <button id="btn-encerrar-chamada" class="bg-red-600 hover:bg-red-500 text-white w-16 h-16 rounded-full flex items-center justify-center text-2xl shadow-lg shadow-red-600/40 transition">
+            <button id="btn-encerrar-chamada" class="bg-red-600 hover:bg-red-500 text-white w-16 h-16 rounded-full flex items-center justify-center text-2xl shadow-lg transition">
                 <i class="fa-solid fa-phone-slash"></i>
             </button>
         </div>
     </div>
 
-    <!-- SCRIPTS FIREBASE & LOGICA -->
+    <!-- SCRIPT FIREBASE -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getDatabase, ref, set, push, onValue, update, remove, get, query, orderByChild } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+        import { getDatabase, ref, set, push, onValue, update, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-        // CONFIGURAÇÃO DO FIREBASE (Insira suas credenciais ou use o padrão de teste/local)
         const firebaseConfig = {
             databaseURL: "https://rockchat-default-rtdb.firebaseio.com/"
         };
@@ -227,29 +201,16 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        // CONFIGURAÇÃO DO CLOUDINARY (Substitua pelo seu preset unsigned)
         const CLOUDINARY_UPLOAD_PRESET = "CLOUDINARY_UPLOAD_PRESET";
         const CLOUDINARY_CLOUD_NAME = "demo";
 
-        // ESTADO GLOBAL DA APLICAÇÃO
         let currentUser = null;
-        let currentTab = 'feed';
         let selectedFile = null;
         let activeCallId = null;
         let activeCallListener = null;
+        let incomingCallData = null;
 
-        // ELEMENTOS DO DOM
-        const authScreen = document.getElementById('auth-screen');
-        const appScreen = document.getElementById('app-screen');
-        const inputUsername = document.getElementById('input-username');
-        const inputPassword = document.getElementById('input-password');
-        const btnLogin = document.getElementById('btn-login');
-        const btnRegister = document.getElementById('btn-register');
-        const btnLogout = document.getElementById('btn-logout');
-        const headerUsername = document.getElementById('header-username');
-        const headerAvatar = document.getElementById('header-avatar');
-        
-        // GATILHO DE ÁUDIO INICIAL (Desbloqueio de Autoplay do Navegador)
+        // Desbloqueio universal de autoplay do navegador no primeiro clique
         document.addEventListener('click', () => {
             const audio = document.getElementById('ringtoneAudio');
             if (audio && audio.paused) {
@@ -261,47 +222,42 @@
         }, { once: true });
 
         // CADASTRO
-        btnRegister.addEventListener('click', async () => {
-            const u = inputUsername.value.trim().toLowerCase();
-            const p = inputPassword.value.trim();
+        document.getElementById('btn-register').addEventListener('click', async () => {
+            const u = document.getElementById('input-username').value.trim().toLowerCase();
+            const p = document.getElementById('input-password').value.trim();
             if (!u || !p) return alert('Preencha todos os campos!');
 
             const userRef = ref(db, `usuarios/${u}`);
             const snap = await get(userRef);
-            if (snap.exists()) return alert('Este nome de usuário já existe!');
+            if (snap.exists()) return alert('Usuário já existe!');
 
             await set(userRef, { username: u, password: p, verified: false, createdAt: Date.now() });
-            alert('Cadastro realizado com sucesso! Faça login.');
+            alert('Cadastrado com sucesso! Faça login.');
         });
 
         // LOGIN
-        btnLogin.addEventListener('click', async () => {
-            const u = inputUsername.value.trim().toLowerCase();
-            const p = inputPassword.value.trim();
+        document.getElementById('btn-login').addEventListener('click', async () => {
+            const u = document.getElementById('input-username').value.trim().toLowerCase();
+            const p = document.getElementById('input-password').value.trim();
             if (!u || !p) return alert('Preencha todos os campos!');
 
             const userRef = ref(db, `usuarios/${u}`);
             const snap = await get(userRef);
-            if (!snap.exists() || snap.val().password !== p) {
-                return alert('Usuário ou senha inválidos!');
-            }
+            if (!snap.exists() || snap.val().password !== p) return alert('Dados inválidos!');
 
             currentUser = snap.val();
-            authScreen.classList.add('hidden');
-            appScreen.classList.remove('hidden');
+            document.getElementById('auth-screen').classList.add('hidden');
+            document.getElementById('app-screen').classList.remove('hidden');
             initApp();
         });
 
-        btnLogout.addEventListener('click', () => {
-            currentUser = null;
-            appScreen.classList.add('hidden');
-            authScreen.classList.remove('hidden');
-            if (activeCallListener) activeCallListener();
+        document.getElementById('btn-logout').addEventListener('click', () => {
+            location.reload();
         });
 
-        // NAVEGAÇÃO ENTRE ABAS
+        // ABAS
         document.querySelectorAll('.tab-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
+            btn.addEventListener('click', () => {
                 document.querySelectorAll('.tab-btn').forEach(b => {
                     b.classList.remove('text-blue-500', 'border-b-2', 'border-blue-500');
                     b.classList.add('text-zinc-400');
@@ -314,22 +270,19 @@
                 document.getElementById('tab-foryou').classList.add('hidden');
                 document.getElementById('tab-chamadas').classList.add('hidden');
                 document.getElementById(`tab-${targetTab}`).classList.remove('hidden');
-                currentTab = targetTab;
             });
         });
 
         function initApp() {
-            headerUsername.innerHTML = `${currentUser.username} ${currentUser.verified ? '<span class="verified-badge"><i class="fa-solid fa-circle-check"></i></span>' : ''}`;
-            headerAvatar.textContent = currentUser.username.charAt(0).toUpperCase();
-            if (currentUser.verified) {
-                headerAvatar.classList.add('profile-border-glow');
-            }
+            document.getElementById('header-username').innerHTML = `${currentUser.username} ${currentUser.verified ? '<span class="verified-badge"><i class="fa-solid fa-circle-check"></i></span>' : ''}`;
+            document.getElementById('header-avatar').textContent = currentUser.username.charAt(0).toUpperCase();
+            if (currentUser.verified) document.getElementById('header-avatar').classList.add('profile-border-glow');
 
             carregarPosts();
             ouvirChamadasRecebidas();
         }
 
-        // UPLOAD DE MÍDIA
+        // MÍDIA & POSTS
         const postFile = document.getElementById('post-file');
         const postPreviewContainer = document.getElementById('post-preview-container');
         
@@ -353,10 +306,9 @@
             return data.secure_url;
         }
 
-        // CRIAR POST
         document.getElementById('btn-publish').addEventListener('click', async () => {
             const text = document.getElementById('post-text').value.trim();
-            if (!text && !selectedFile) return alert('Escreva algo ou adicione uma mídia!');
+            if (!text && !selectedFile) return alert('Escreva algo ou insira mídia!');
 
             let mediaUrl = null;
             let mediaType = null;
@@ -365,8 +317,7 @@
                 mediaType = selectedFile.type.startsWith('video') ? 'video' : 'image';
             }
 
-            const postsRef = ref(db, 'posts');
-            await push(postsRef, {
+            await push(ref(db, 'posts'), {
                 author: currentUser.username,
                 text,
                 mediaUrl,
@@ -383,51 +334,37 @@
             postFile.value = '';
         });
 
-        // CARREGAR POSTS (FEED & FOR YOU)
         function carregarPosts() {
-            const postsRef = ref(db, 'posts');
-            onValue(postsRef, async (snap) => {
+            onValue(ref(db, 'posts'), async (snap) => {
                 const data = snap.val() || {};
-                const postsArray = Object.keys(data).map(id => ({ id, ...data[id] }));
-                postsArray.sort((a, b) => b.createdAt - a.createdAt);
-
-                // Buscar status verificado dos autores
+                const posts = Object.keys(data).map(id => ({ id, ...data[id] })).sort((a, b) => b.createdAt - a.createdAt);
                 const usersSnap = await get(ref(db, 'usuarios'));
                 const usersData = usersSnap.val() || {};
 
-                renderFeed(postsArray, usersData);
-                renderForYou(postsArray, usersData);
+                renderFeed(posts, usersData);
+                renderForYou(posts, usersData);
             });
         }
 
         function renderFeed(posts, usersData) {
             const container = document.getElementById('posts-container');
-            container.innerHTML = '';
-
-            if (posts.length === 0) {
-                container.innerHTML = `<p class="text-center text-zinc-500 text-xs py-8">Nenhuma publicação encontrada.</p>`;
-                return;
-            }
-
+            container.innerHTML = posts.length === 0 ? `<p class="text-center text-zinc-500 text-xs py-8">Nenhum post.</p>` : '';
             posts.forEach(post => {
                 const isVerified = usersData[post.author]?.verified;
                 const isLiked = post.likedBy && post.likedBy[currentUser.username];
-                
                 const card = document.createElement('div');
                 card.className = "bg-zinc-900/50 border border-zinc-800 rounded-2xl p-4 space-y-3";
                 card.innerHTML = `
                     <div class="flex items-center justify-between">
                         <div class="flex items-center gap-2">
-                            <div class="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center font-bold text-blue-400 text-xs ${isVerified ? 'profile-border-glow' : ''}">${post.author.charAt(0).toUpperCase()}</div>
+                            <div class="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center font-bold text-blue-400 text-xs">${post.author.charAt(0).toUpperCase()}</div>
                             <span class="font-bold text-sm flex items-center gap-1">${post.author} ${isVerified ? '<span class="verified-badge"><i class="fa-solid fa-circle-check"></i></span>' : ''}</span>
                         </div>
-                        <span class="text-xs text-zinc-500">${new Date(post.createdAt).toLocaleDateString()}</span>
                     </div>
                     ${post.text ? `<p class="text-sm text-zinc-200">${post.text}</p>` : ''}
                     ${post.mediaUrl ? `<div class="rounded-xl overflow-hidden bg-black max-h-80 flex items-center justify-center">${post.mediaType === 'video' ? `<video src="${post.mediaUrl}" controls class="w-full max-h-80 object-cover"></video>` : `<img src="${post.mediaUrl}" class="w-full max-h-80 object-cover">`}</div>` : ''}
-                    
-                    <div class="flex items-center gap-4 pt-2 border-t border-zinc-800/60 text-xs text-zinc-400">
-                        <button onclick="toggleLike('${post.id}')" class="flex items-center gap-1.5 hover:text-red-500 transition ${isLiked ? 'text-red-500 font-bold' : ''}">
+                    <div class="pt-2 border-t border-zinc-800 text-xs">
+                        <button onclick="toggleLike('${post.id}')" class="flex items-center gap-1 ${isLiked ? 'text-red-500 font-bold' : 'text-zinc-400'}">
                             <i class="${isLiked ? 'fa-solid' : 'fa-regular'} fa-heart"></i> ${post.likes || 0}
                         </button>
                     </div>
@@ -438,16 +375,8 @@
 
         function renderForYou(posts, usersData) {
             const container = document.getElementById('foryou-container');
-            container.innerHTML = '';
-            
-            // Ordenar por mais curtidas
             const sorted = [...posts].sort((a, b) => (b.likes || 0) - (a.likes || 0));
-
-            if (sorted.length === 0) {
-                container.innerHTML = `<p class="text-center text-zinc-500 text-xs py-8">Nenhum destaque no momento.</p>`;
-                return;
-            }
-
+            container.innerHTML = sorted.length === 0 ? `<p class="text-center text-zinc-500 text-xs py-8">Nenhum destaque.</p>` : '';
             sorted.forEach(post => {
                 const isVerified = usersData[post.author]?.verified;
                 const card = document.createElement('div');
@@ -455,13 +384,11 @@
                 card.innerHTML = `
                     <div class="flex items-center justify-between">
                         <div class="flex items-center gap-2">
-                            <div class="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center font-bold text-blue-400 text-xs">${post.author.charAt(0).toUpperCase()}</div>
-                            <span class="font-bold text-sm flex items-center gap-1">${post.author} ${isVerified ? '<span class="verified-badge"><i class="fa-solid fa-circle-check"></i></span>' : ''}</span>
+                            <span class="font-bold text-sm">${post.author} ${isVerified ? '<span class="verified-badge"><i class="fa-solid fa-circle-check"></i></span>' : ''}</span>
                         </div>
-                        <span class="text-xs text-blue-400 font-bold"><i class="fa-solid fa-fire"></i> ${post.likes || 0} curtidas</span>
+                        <span class="text-xs text-blue-400 font-bold"><i class="fa-solid fa-fire"></i> ${post.likes || 0}</span>
                     </div>
                     ${post.text ? `<p class="text-sm text-zinc-200">${post.text}</p>` : ''}
-                    ${post.mediaUrl ? `<div class="rounded-xl overflow-hidden bg-black max-h-60 flex items-center justify-center">${post.mediaType === 'video' ? `<video src="${post.mediaUrl}" controls class="w-full max-h-60 object-cover"></video>` : `<img src="${post.mediaUrl}" class="w-full max-h-60 object-cover">`}</div>` : ''}
                 `;
                 container.appendChild(card);
             });
@@ -474,7 +401,6 @@
             const post = snap.val();
             const likedBy = post.likedBy || {};
             let likes = post.likes || 0;
-
             if (likedBy[currentUser.username]) {
                 delete likedBy[currentUser.username];
                 likes = Math.max(0, likes - 1);
@@ -482,63 +408,43 @@
                 likedBy[currentUser.username] = true;
                 likes += 1;
             }
-
             await update(postRef, { likes, likedBy });
         }
 
-        // SISTEMA DE LOJA DE SELO & PIX
-        const modalSelo = document.getElementById('modal-selo');
-        document.getElementById('btn-loja-selo').addEventListener('click', () => modalSelo.classList.remove('hidden'));
-        document.getElementById('close-modal-selo').addEventListener('click', () => modalSelo.classList.add('hidden'));
-
-        document.getElementById('btn-enviar-pix',).addEventListener('click', async () => {
+        // SELO & PIX
+        document.getElementById('btn-loja-selo').addEventListener('click', () => document.getElementById('modal-selo').classList.remove('hidden'));
+        document.getElementById('close-modal-selo').addEventListener('click', () => document.getElementById('modal-selo').classList.add('hidden'));
+        document.getElementById('btn-enviar-pix').addEventListener('click', async () => {
             const pixId = document.getElementById('input-pix-id').value.trim();
-            if (!pixId) return alert('Insira o ID/comprovante do Pix!');
-
-            const solicitacaoRef = push(ref(db, 'solicitacoes_verificado'));
-            await set(solicitacaoRef, {
-                username: currentUser.username,
-                pixId,
-                status: 'pendente',
-                createdAt: Date.now()
-            });
-
-            alert('Comprovante enviado para análise! O selo será ativado em breve.');
-            modalSelo.classList.add('hidden');
+            if (!pixId) return alert('Insira o ID!');
+            await push(ref(db, 'solicitacoes_verificado'), { username: currentUser.username, pixId, status: 'pendente', createdAt: Date.now() });
+            alert('Enviado para análise!');
+            document.getElementById('modal-selo').classList.add('hidden');
         });
 
         // ==========================================
-        // SISTEMA ROBUSTO DE CHAMADAS E NOTIFICAÇÃO
+        // SISTEMA DE CHAMADAS COM SOM, ALERTA E VIBRAÇÃO
         // ==========================================
-        
         document.getElementById('btn-start-call').addEventListener('click', async () => {
             const target = document.getElementById('target-username-call').value.trim().toLowerCase();
-            if (!target || target === currentUser.username) return alert('Digite um nome de usuário válido para ligar!');
+            if (!target || target === currentUser.username) return alert('Usuário inválido!');
 
             const targetSnap = await get(ref(db, `usuarios/${target}`));
             if (!targetSnap.exists()) return alert('Usuário não encontrado!');
 
             const callRef = push(ref(db, 'ligacoes'));
-            const callId = callRef.key;
+            await set(callRef, { id: callRef.key, caller: currentUser.username, receiver: target, status: 'chamando', createdAt: Date.now() });
 
-            await set(callRef, {
-                id: callId,
-                caller: currentUser.username,
-                receiver: target,
-                status: 'chamando',
-                createdAt: Date.now()
-            });
-
-            abrirTelaChamada(callId, target, 'Chamando...');
+            abrirTelaChamada(callRef.key, target, 'Chamando...');
         });
 
         function ouvirChamadasRecebidas() {
-            const ligacoesRef = ref(db, 'ligacoes');
-            activeCallListener = onValue(ligacoesRef, (snap) => {
+            onValue(ref(db, 'ligacoes'), (snap) => {
                 const data = snap.val() || {};
                 Object.keys(data).forEach(id => {
                     const call = data[id];
-                    if (call.receiver === currentUser.username && call.status === 'chamando' && !activeCallId) {
+                    if (call.receiver === currentUser.username && call.status === 'chamando' && !activeCallId && (!incomingCallData || incomingCallData.id !== call.id)) {
+                        incomingCallData = call;
                         dispararAlertaChamadaRecebida(call);
                     }
                 });
@@ -546,33 +452,21 @@
         }
 
         function dispararAlertaChamadaRecebida(call) {
-            // Tocar o áudio com força total
+            // Tocar Som
             const audio = document.getElementById('ringtoneAudio');
             if (audio) {
                 audio.currentTime = 0;
-                audio.play().catch(e => console.log("Áudio bloqueado:", e));
+                audio.play().catch(() => {});
             }
 
-            // Tentar vibrar o dispositivo (se suportado)
+            // Tentar Vibrar o Dispositivo
             if ("vibrate" in navigator) {
-                try { navigator.vibrate([500, 200, 500, 200, 500]); } catch(e){}
+                try { navigator.vibrate([500, 200, 500, 200, 500, 200, 500]); } catch(e){}
             }
 
-            // Exibir Banner Urgente
-            const modalUrgente = document.getElementById('modal-chamada-urgente');
-            document.getElementById('chamador-texto').textContent = `Chamada recebida de @${call.caller}`;
-            modalUrgente.classList.remove('hidden');
-
-            document.getElementById('btn-atender-chamada').onclick = async () => {
-                pararAlertasChamada();
-                await update(ref(db, `ligacoes/${call.id}`), { status: 'ativa' });
-                abrirTelaChamada(call.id, call.caller, 'Conectado');
-            };
-
-            document.getElementById('btn-recusar-chamada').onclick = async () => {
-                pararAlertasChamada();
-                await update(ref(db, `ligacoes/${call.id}`), { status: 'recusada' });
-            };
+            // Exibir Modal de Chamada Recebida
+            document.getElementById('texto-chamada-recebida').textContent = `Chamada de @${call.caller}`;
+            document.getElementById('modal-chamada-recebida').classList.remove('hidden');
         }
 
         function pararAlertasChamada() {
@@ -584,31 +478,41 @@
             if ("vibrate" in navigator) {
                 try { navigator.vibrate(0); } catch(e){}
             }
-            document.getElementById('modal-chamada-urgente').classList.add('hidden');
+            document.getElementById('modal-chamada-recebida').classList.add('hidden');
         }
+
+        document.getElementById('btn-atender').onclick = async () => {
+            if (!incomingCallData) return;
+            pararAlertasChamada();
+            await update(ref(db, `ligacoes/${incomingCallData.id}`), { status: 'ativa' });
+            abrirTelaChamada(incomingCallData.id, incomingCallData.caller, 'Conectado');
+            incomingCallData = null;
+        };
+
+        document.getElementById('btn-recusar').onclick = async () => {
+            if (!incomingCallData) return;
+            pararAlertasChamada();
+            await update(ref(db, `ligacoes/${incomingCallData.id}`), { status: 'recusada' });
+            incomingCallData = null;
+        };
 
         function abrirTelaChamada(callId, peerName, statusText) {
             activeCallId = callId;
             pararAlertasChamada();
-            
+
             const modal = document.getElementById('modal-chamada-ativa');
             document.getElementById('call-peer-name').textContent = peerName;
-            document.getElementById('call-avatar').textContent = peerName.charAt(0).toUpperCase();
             document.getElementById('call-status-text').textContent = statusText;
             modal.classList.remove('hidden');
 
-            // Ouvir atualizações da chamada
-            const callRef = ref(db, `ligacoes/${callId}`);
-            onValue(callRef, (snap) => {
+            onValue(ref(db, `ligacoes/${callId}`), (snap) => {
                 const call = snap.val();
                 if (!call || call.status === 'recusada' || call.status === 'encerrada') {
                     fecharTelaChamada();
                 }
             });
 
-            // Ouvir mensagens da chamada
-            const msgsRef = ref(db, `ligacoes/${callId}/mensagens`);
-            onValue(msgsRef, (snap) => {
+            onValue(ref(db, `ligacoes/${callId}/mensagens`), (snap) => {
                 const msgs = snap.val() || {};
                 const container = document.getElementById('call-messages');
                 container.innerHTML = '';
@@ -626,28 +530,21 @@
             const input = document.getElementById('call-input-msg');
             const text = input.value.trim();
             if (!text || !activeCallId) return;
-
-            await push(ref(db, `ligacoes/${activeCallId}/mensagens`), {
-                sender: currentUser.username,
-                text,
-                createdAt: Date.now()
-            });
+            await push(ref(db, `ligacoes/${activeCallId}/mensagens`), { sender: currentUser.username, text, createdAt: Date.now() });
             input.value = '';
         };
 
         document.getElementById('btn-encerrar-chamada').onclick = async () => {
-            if (activeCallId) {
-                await update(ref(db, `ligacoes/${activeCallId}`), { status: 'encerrada' });
-            }
+            if (activeCallId) await update(ref(db, `ligacoes/${activeCallId}`), { status: 'encerrada' });
             fecharTelaChamada();
         };
 
         function fecharTelaChamada() {
             activeCallId = null;
+            incomingCallData = null;
             document.getElementById('modal-chamada-ativa').classList.add('hidden');
             pararAlertasChamada();
         }
-
     </script>
 </body>
 </html>
