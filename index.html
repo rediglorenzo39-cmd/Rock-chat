@@ -32,7 +32,7 @@
         <div class="bg-white border border-zinc-200 rounded-3xl p-8 w-full max-w-md shadow-lg">
             <div class="text-center mb-6">
                 <h1 class="text-3xl font-black tracking-wider text-blue-600">ROCK CHAT</h1>
-                <p class="text-zinc-500 text-sm mt-1">Entre ou cadastre-se para conversar.</p>
+                <p class="text-zinc-500 text-sm mt-1">Entre ou crie sua conta automaticamente.</p>
             </div>
             
             <div class="space-y-4">
@@ -45,9 +45,8 @@
                     <input type="password" id="input-password" placeholder="Sua senha" class="w-full bg-zinc-100 border border-zinc-200 rounded-xl px-4 py-3 text-zinc-800 focus:outline-none focus:border-blue-600">
                 </div>
                 
-                <div class="flex gap-3 pt-2">
-                    <button id="btn-login" class="flex-1 bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl transition">Entrar</button>
-                    <button id="btn-register" class="flex-1 bg-zinc-200 hover:bg-zinc-300 text-zinc-800 font-bold py-3 rounded-xl transition">Cadastrar</button>
+                <div class="pt-2">
+                    <button id="btn-entrar-criar" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl transition">Entrar / Criar</button>
                 </div>
             </div>
         </div>
@@ -220,31 +219,27 @@
             }
         }, { once: true });
 
-        // CADASTRO
-        document.getElementById('btn-register').addEventListener('click', async () => {
+        // ENTRAR / CRIAR CONTA AUTOMATICAMENTE
+        document.getElementById('btn-entrar-criar').addEventListener('click', async () => {
             const u = document.getElementById('input-username').value.trim().toLowerCase();
             const p = document.getElementById('input-password').value.trim();
             if (!u || !p) return alert('Preencha todos os campos!');
 
             const userRef = ref(db, `usuarios/${u}`);
             const snap = await get(userRef);
-            if (snap.exists()) return alert('Usuário já existe!');
 
-            await set(userRef, { username: u, password: p, verified: false, createdAt: Date.now() });
-            alert('Cadastrado com sucesso! Faça login.');
-        });
+            if (snap.exists()) {
+                // Conta existe, verificar senha para entrar
+                const userData = snap.val();
+                if (userData.password !== p) return alert('Senha incorreta!');
+                currentUser = userData;
+            } else {
+                // Conta não existe, criar automaticamente
+                const newUser = { username: u, password: p, verified: false, createdAt: Date.now() };
+                await set(userRef, newUser);
+                currentUser = newUser;
+            }
 
-        // LOGIN
-        document.getElementById('btn-login').addEventListener('click', async () => {
-            const u = document.getElementById('input-username').value.trim().toLowerCase();
-            const p = document.getElementById('input-password').value.trim();
-            if (!u || !p) return alert('Preencha todos os campos!');
-
-            const userRef = ref(db, `usuarios/${u}`);
-            const snap = await get(userRef);
-            if (!snap.exists() || snap.val().password !== p) return alert('Dados inválidos!');
-
-            currentUser = snap.val();
             document.getElementById('auth-screen').classList.add('hidden');
             document.getElementById('app-screen').classList.remove('hidden');
             initApp();
