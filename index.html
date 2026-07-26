@@ -21,6 +21,74 @@
       min-height: 100vh;
     }
 
+    /* Modo Escuro */
+    body.dark-mode {
+      background-color: #121212;
+      color: #e0e0e0;
+    }
+
+    body.dark-mode #app-container {
+      background: #18191a;
+      box-shadow: 0 0 10px rgba(255,255,255,0.05);
+    }
+
+    body.dark-mode header {
+      background: #000;
+      border-bottom: 1px solid #333;
+    }
+
+    body.dark-mode nav {
+      background: #18191a;
+      border-top: 1px solid #333;
+    }
+
+    body.dark-mode nav button {
+      color: #aaa;
+    }
+
+    body.dark-mode nav button.active {
+      color: #ff007f;
+    }
+
+    body.dark-mode .post-box, 
+    body.dark-mode .profile-card,
+    body.dark-mode .modal-content,
+    body.dark-mode #feedView > div:first-child,
+    body.dark-mode #adminView > div,
+    body.dark-mode #searchView input {
+      background: #242526;
+      border-color: #383838;
+      color: #e0e0e0;
+    }
+
+    body.dark-mode .comments-section {
+      background: #1c1d1e;
+      border-top: 1px solid #383838;
+    }
+
+    body.dark-mode .comment-item span,
+    body.dark-mode .post-content,
+    body.dark-mode .post-footer button {
+      color: #e0e0e0;
+    }
+
+    body.dark-mode .post-footer {
+      border-top: 1px solid #383838;
+    }
+
+    body.dark-mode .post-footer button {
+      border-color: #444;
+      background: #2a2b2c;
+    }
+
+    body.dark-mode input[type="text"],
+    body.dark-mode input[type="password"],
+    body.dark-mode textarea {
+      background: #3a3b3c;
+      color: #fff;
+      border-color: #555;
+    }
+
     .hidden {
       display: none !important;
     }
@@ -223,6 +291,11 @@
       padding: 20px;
     }
 
+    body.dark-mode .auth-screen {
+      background: #18191a;
+      color: #fff;
+    }
+
     .auth-box {
       width: 100%;
       max-width: 320px;
@@ -281,7 +354,7 @@
     <!-- TELA DE AUTENTICAÇÃO (LOGIN / CADASTRO) -->
     <div id="authScreen" class="auth-screen">
       <div class="auth-box">
-        <h2 style="text-align: center; margin-bottom: 10px; color: #000;">Rock Chat</h2>
+        <h2 style="text-align: center; margin-bottom: 10px;">Rock Chat</h2>
         <input type="text" id="authUsername" placeholder="Nome de usuário">
         <input type="password" id="authPassword" placeholder="Senha">
         <button onclick="realizarLogin()">Entrar</button>
@@ -293,7 +366,10 @@
     <!-- HEADER GLOBAL -->
     <header>
       <span>Rock Chat</span>
-      <span id="headerUserDisplay" style="font-size: 12px; font-weight: normal;"></span>
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <button onclick="toggleTema()" style="background: none; border: none; font-size: 16px; cursor: pointer;" title="Mudar Tema">🌓</button>
+        <span id="headerUserDisplay" style="font-size: 12px; font-weight: normal;"></span>
+      </div>
     </header>
 
     <!-- CONTEÚDO PRINCIPAL / ABAS -->
@@ -302,7 +378,7 @@
       <!-- ABA: FEED GERAL -->
       <div id="feedView" class="tab-view">
         <div style="background: #fff; border: 1px solid #ddd; padding: 10px; border-radius: 8px; margin-bottom: 12px;">
-          <textarea id="tweetContent" placeholder="O que está acontecendo?" style="width: 100%; border: none; resize: none; font-size: 13px; outline: none;" rows="3"></textarea>
+          <textarea id="tweetContent" placeholder="O que está acontecendo?" style="width: 100%; border: none; resize: none; font-size: 13px; outline: none; background: transparent;" rows="3"></textarea>
           
           <div id="postMediaPreviewContainer" class="hidden" style="margin-bottom: 8px; position: relative;">
             <img id="postImagePreview" class="hidden" style="width: 100%; max-height: 150px; object-fit: cover; border-radius: 4px;">
@@ -427,8 +503,8 @@
     const db = getDatabase(app);
 
     const ADMIN_USER = "admin";
-    const CLOUDINARY_CLOUD_NAME = "seu_cloud_name"; // Substitua se necessário
-    const CLOUDINARY_UPLOAD_PRESET = "seu_upload_preset"; // Substitua se necessário
+    const CLOUDINARY_CLOUD_NAME = "seu_cloud_name";
+    const CLOUDINARY_UPLOAD_PRESET = "seu_upload_preset";
 
     let usuarioAtual = null;
     let modoAtual = 'feed';
@@ -439,11 +515,13 @@
     let todosPosts = {};
     let todosUsuarios = {};
 
-    // Inicialização da escuta global de usuários
+    window.toggleTema = function() {
+      document.body.classList.toggle('dark-mode');
+    };
+
     onValue(ref(db, 'usuarios'), (snapshot) => {
       todosUsuarios = snapshot.val() || {};
       if (usuarioAtual && todosUsuarios[usuarioAtual]) {
-        // Atualizar interface se necessário
         if (modoAtual === 'profile' && perfilAberto === usuarioAtual) {
           carregarPerfil(usuarioAtual);
         }
@@ -560,7 +638,6 @@
       document.querySelectorAll('.content-body > div').forEach(div => div.classList.add('hidden'));
     }
 
-    // --- FUNÇÕES DE VERIFICAÇÃO E ADMIN ---
     window.abrirModalSolicitarVerificacao = function() {
       document.getElementById('verifModal').classList.remove('hidden');
       document.getElementById('verifPixInput').value = '';
@@ -702,7 +779,6 @@
       }
     };
 
-    // --- FUNÇÕES DE POSTAGEM E FEED ---
     window.triggerMidiaPostUpload = function() {
       document.getElementById('postFileInput').click();
     };
@@ -965,7 +1041,7 @@
         const item = document.createElement('div');
         item.className = 'comment-item';
         item.innerHTML = `
-          <strong style="color: #333; cursor: pointer;" onclick="abrirPerfil('${com.autor}')">@${com.autor}${verifBadge}:</strong> 
+          <strong style="cursor: pointer;" onclick="abrirPerfil('${com.autor}')">@${com.autor}${verifBadge}:</strong> 
           <span>${com.texto}</span>
         `;
         listContainer.appendChild(item);
@@ -1196,7 +1272,7 @@
           const verifBadge = ehVerificado ? ' <span class="badge-verified">✔</span>' : '';
 
           const item = document.createElement('div');
-          item.style.cssText = "display: flex; align-items: center; justify-content: space-between; background: #fff; border: 1px solid #ccc; padding: 8px; margin-bottom: 5px;";
+          item.style.cssText = "display: flex; align-items: center; justify-content: space-between; padding: 8px; margin-bottom: 5px; border-radius: 4px;";
           item.innerHTML = `
             <div style="display: flex; align-items: center; gap: 8px; cursor: pointer;" onclick="abrirPerfil('${username}')">
               <img class="avatar-mini" src="${foto}">
