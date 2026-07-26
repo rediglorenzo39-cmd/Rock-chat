@@ -348,6 +348,33 @@
 
     window.addEventListener('DOMContentLoaded', () => {
       solicitarPermissaoNotificacao();
+      
+      // DESBLOQUEIO GLOBAL DE ÁUDIO NO CELULAR (Ao primeiro toque em qualquer lugar da tela)
+      const desbloquearAudioCelular = () => {
+        if (!audioCtx) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          audioCtx = new AudioContext();
+        }
+        if (audioCtx.state === 'suspended') {
+          audioCtx.resume();
+        }
+        // Toca um som mudo ultra rápido apenas para o navegador liberar o motor de áudio
+        try {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          gain.gain.setValueAtTime(0.001, audioCtx.currentTime);
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start();
+          osc.stop(audioCtx.currentTime + 0.01);
+        } catch(e) {}
+        
+        window.removeEventListener('click', desbloquearAudioCelular);
+        window.removeEventListener('touchstart', desbloquearAudioCelular);
+      };
+      window.addEventListener('click', desbloquearAudioCelular);
+      window.addEventListener('touchstart', desbloquearAudioCelular);
+
       const usuarioSalvo = localStorage.getItem('rockchat_usuario_logado');
       if (usuarioSalvo) {
         get(child(ref(db), `usuarios/${usuarioSalvo}`)).then((snapshot) => {
@@ -368,7 +395,7 @@
       }
     }
 
-    // TOCAR SOM DE CHAMADA GERADO POR CÓDIGO (Bypass de bloqueios do navegador)
+    // TOCAR SOM DE CHAMADA GERADO POR CÓDIGO COM FORÇAGEM DE ATIVAÇÃO
     function iniciarToqueChamadaSonoro() {
       if (!audioCtx) {
         const AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -383,24 +410,27 @@
       const tocarBip = () => {
         if (!audioCtx) return;
         try {
+          if (audioCtx.state === 'suspended') {
+            audioCtx.resume();
+          }
           const osc = audioCtx.createOscillator();
           const gain = audioCtx.createGain();
           osc.type = 'sine';
-          osc.frequency.setValueAtTime(440, audioCtx.currentTime); // Tom padrão de chamada
+          osc.frequency.setValueAtTime(520, audioCtx.currentTime); // Frequência ajustada para tocar mais alto
           
-          gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-          gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.4);
+          gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.5);
 
           osc.connect(gain);
           gain.connect(audioCtx.destination);
           
           osc.start();
-          osc.stop(audioCtx.currentTime + 0.4);
+          osc.stop(audioCtx.currentTime + 0.5);
         } catch(e) {}
       };
 
       tocarBip();
-      intervaloToqueBip = setInterval(tocarBip, 1200);
+      intervaloToqueBip = setInterval(tocarBip, 1000);
     }
 
     function pararToqueChamadaSonoro() {
