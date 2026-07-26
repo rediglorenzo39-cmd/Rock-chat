@@ -225,14 +225,33 @@
 
       <!-- TELA DE CHAT DE GRUPO ESPECÍFICO -->
       <div id="groupChatView" class="hidden" style="border: 1px solid #ccc; background: #fafafa; padding: 15px; margin-bottom: 15px;">
-        <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid #8e24aa; padding-bottom: 10px; margin-bottom: 15px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid #8e24aa; padding-bottom: 10px; margin-bottom: 10px;">
           <div style="display: flex; align-items: center; gap: 10px;">
             <button onclick="voltarParaListaGrupos()" style="font-size: 12px;">← Voltar</button>
             <h3 id="groupChatNameTitle" style="font-size: 15px; color: #4a148c;">Nome do Grupo</h3>
           </div>
           <button class="btn-delete" style="font-size: 11px;" onclick="sairDoGrupo()">Sair do Grupo</button>
         </div>
-        <div id="groupChatMessagesContainer" style="height: 250px; overflow-y: auto; background: #fff; border: 1px solid #ddd; padding: 10px; margin-bottom: 10px; display: flex; flex-direction: column; gap: 8px;"></div>
+
+        <!-- BARRA DE NOTIFICAÇÃO / CONTROLE DO DONO (VISÍVEL APENAS PARA O DONO) -->
+        <div id="ownerControlDashboard" class="hidden" style="background: #f3e5f5; border: 1px dashed #8e24aa; padding: 10px; margin-bottom: 10px; border-radius: 4px;">
+          <h5 style="color: #4a148c; font-size: 12px; margin-bottom: 6px;">🛠️ Painel do Dono do Grupo</h5>
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            <div style="font-size: 11px; color: #333;" id="ownerPermissionStatusText">Permissão de membros adicionarem pessoas: Ativada</div>
+            <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+              <button class="btn-group" style="font-size: 11px; padding: 4px 8px;" onclick="alternarPermissaoMembrosAdd(true)">Permitir Membros Adicionarem</button>
+              <button style="font-size: 11px; padding: 4px 8px; background: #e0e0e0;" onclick="alternarPermissaoMembrosAdd(false)">Apenas Dono Adiciona</button>
+              <button class="btn-delete" style="font-size: 11px; padding: 4px 8px;" onclick="donoDeletarGrupoParaSempre()">Deletar Grupo para Sempre</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- BOTÃO ADICIONAR PESSOAS AO GRUPO -->
+        <div id="addUserToGroupSection" style="margin-bottom: 10px;">
+          <button id="btnAddMemberToGroup" class="btn-group" style="font-size: 11px; width: 100%; padding: 6px;" onclick="abrirModalAdicionarMembroGrupo()">+ Adicionar Pessoa ao Grupo</button>
+        </div>
+
+        <div id="groupChatMessagesContainer" style="height: 220px; overflow-y: auto; background: #fff; border: 1px solid #ddd; padding: 10px; margin-bottom: 10px; display: flex; flex-direction: column; gap: 8px;"></div>
         <div>
           <label style="font-size: 12px; font-weight: bold; display: block; margin-bottom: 4px;">Escrever no grupo:</label>
           <textarea id="groupChatInputContent" style="width: 100%; height: 50px; margin-bottom: 6px;" placeholder="Digite sua mensagem para o grupo..."></textarea>
@@ -357,6 +376,24 @@
     </div>
   </div>
 
+  <!-- MODAL DE ADICIONAR MEMBRO AO GRUPO JÁ CRIADO -->
+  <div id="modalAdicionarMembro" class="modal-overlay hidden">
+    <div class="modal-box" style="max-width: 380px; text-align: left;">
+      <h4 style="color: #4a148c; margin-bottom: 10px; text-align: center;">➕ Adicionar Pessoa ao Grupo</h4>
+      
+      <label style="font-size: 12px; font-weight: bold; display: block; margin-bottom: 3px;">Pesquisar usuário:</label>
+      <input type="text" id="pesquisaMembroExistenteInput" placeholder="Digite o nome..." oninput="filtrarPerfisParaAdicionarExistente()" style="width: 100%; margin-bottom: 8px;">
+
+      <div id="resultadosPesquisaMembroExistente" style="max-height: 150px; overflow-y: auto; border: 1px solid #ddd; background: #fff; padding: 5px; margin-bottom: 12px;">
+        <div style="font-size: 11px; color: #777;">Digite para buscar...</div>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end;">
+        <button onclick="fecharModalAdicionarMembro()">Fechar</button>
+      </div>
+    </div>
+  </div>
+
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getDatabase, ref, push, onValue, set, remove, get, child, update, onDisconnect } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
@@ -394,10 +431,8 @@
     let arquivoSelecionado = null;
     let ultimaMensagemNotificadaKey = null;
 
-    // VARIÁVEIS DE SISTEMA DE GRUPO (SELEÇÃO)
     let membrosSelecionadosParaGrupo = [];
 
-    // VARIÁVEIS DE SISTEMA DE LIGAÇÃO
     let chamadaAtualId = null;
     let chamadaAtivaObj = null;
     let ligacaoEmAndamentoKey = null;
@@ -654,11 +689,11 @@
       renderizarPainelAdmin();
     };
 
-    // FUNÇÕES DO SISTEMA DE GRUPOS
+    // --- FUNÇÕES DE GRUPOS ATUALIZADAS ---
     window.abrirModalCriarGrupo = function() {
       document.getElementById('nomeGrupoInput').value = '';
       document.getElementById('pesquisaMembrosInput').value = '';
-      membrosSelecionadosParaGrupo = [usuarioAtual]; // criador já entra automático
+      membrosSelecionadosParaGrupo = [usuarioAtual];
       renderizarMembrosSelecionados();
       document.getElementById('resultadosPesquisaMembros').innerHTML = '<div style="font-size: 11px; color: #777;">Digite algo para buscar pessoas...</div>';
       document.getElementById('modalCriarGrupo').classList.remove('hidden');
@@ -711,7 +746,7 @@
     };
 
     window.removerMembroGrupo = function(username) {
-      if (username === usuarioAtual) return; // criador não se remove
+      if (username === usuarioAtual) return;
       membrosSelecionadosParaGrupo = membrosSelecionadosParaGrupo.filter(u => u !== username);
       renderizarMembrosSelecionados();
       filtrarPerfisParaGrupo();
@@ -752,6 +787,7 @@
           nome: nomeGrupo,
           criador: usuarioAtual,
           membros: membrosSelecionadosParaGrupo,
+          membrosCanAdd: true, // Configuração padrão: todos podem adicionar
           timestamp: Date.now()
         };
 
@@ -767,11 +803,30 @@
     function escutarGruposGerais() {
       onValue(ref(db, 'grupos'), (snap) => {
         todosGrupos = snap.val() || {};
+        
+        // Se o grupo ativo foi deletado, tira o usuário de lá
+        if (grupoAtivoId && !todosGrupos[grupoAtivoId]) {
+          alert("O dono deletou este grupo permanentemente.");
+          voltarParaListaGrupos();
+          return;
+        }
+
+        // Se o usuário foi removido do grupo
+        if (grupoAtivoId && todosGrupos[grupoAtivoId]) {
+          const g = todosGrupos[grupoAtivoId];
+          if (!g.membros || !g.membros.includes(usuarioAtual)) {
+            alert("Você foi desconectado ou o grupo não existe mais.");
+            voltarParaListaGrupos();
+            return;
+          }
+        }
+
         if (modoAtual === 'groups') {
           renderizarMeusGrupos();
         }
         if (grupoAtivoId) {
           carregarMensagensDoGrupo(grupoAtivoId);
+          atualizarInterfacePainelDono();
         }
       });
     }
@@ -801,7 +856,7 @@
         card.innerHTML = `
           <div>
             <strong style="font-size: 14px; color: #4a148c;">👥 ${g.nome}</strong>
-            <div style="font-size: 11px; color: #666; margin-top: 3px;">Membros: ${g.membros.length} pessoas (Criador: @${g.criador})</div>
+            <div style="font-size: 11px; color: #666; margin-top: 3px;">Membros: ${g.membros.length} pessoas (Dono: @${g.criador})</div>
           </div>
           <div>
             <button class="btn-group" onclick="abrirChatDoGrupo('${gKey}')">Abrir Grupo</button>
@@ -817,35 +872,166 @@
       esconderTodasAsAbas();
       document.getElementById('groupChatView').classList.remove('hidden');
       document.getElementById('groupChatNameTitle').innerText = '👥 ' + (g.nome || 'Grupo');
+      
+      atualizarInterfacePainelDono();
       carregarMensagensDoGrupo(gKey);
     };
+
+    function atualizarInterfacePainelDono() {
+      if (!grupoAtivoId) return;
+      const g = todosGrupos[grupoAtivoId];
+      if (!g) return;
+
+      const ehDono = g.criador === usuarioAtual;
+      const dashboard = document.getElementById('ownerControlDashboard');
+      const btnAddMembro = document.getElementById('btnAddMemberToGroup');
+      const statusText = document.getElementById('ownerPermissionStatusText');
+
+      if (ehDono) {
+        dashboard.classList.remove('hidden');
+        statusText.innerText = `Permissão de membros adicionarem: ${g.membersCanAdd ? "Permitido (Todos podem)" : "Proibido (Apenas Dono)"}`;
+      } else {
+        dashboard.classList.add('hidden');
+      }
+
+      // Verifica se os membros podem adicionar pessoas
+      if (ehDono || g.membersCanAdd === true) {
+        btnAddMembro.classList.remove('hidden');
+      } else {
+        btnAddMembro.classList.add('hidden');
+      }
+    }
 
     window.voltarParaListaGrupos = function() {
       grupoAtivoId = null;
       abrirAbaGrupos();
     };
 
-    // NOVA FUNÇÃO: SAIR DO GRUPO
+    // --- FUNÇÕES DE ADICIONAR MEMBRO E CONTROLE DO DONO ---
+    window.abrirModalAdicionarMembroGrupo = function() {
+      document.getElementById('pesquisaMembroExistenteInput').value = '';
+      document.getElementById('resultadosPesquisaMembroExistente').innerHTML = '<div style="font-size: 11px; color: #777;">Digite para buscar...</div>';
+      document.getElementById('modalAdicionarMembro').classList.remove('hidden');
+    };
+
+    window.fecharModalAdicionarMembro = function() {
+      document.getElementById('modalAdicionarMembro').classList.add('hidden');
+    };
+
+    window.filtrarPerfisParaAdicionarExistente = function() {
+      const termo = document.getElementById('pesquisaMembroExistenteInput').value.trim().toLowerCase();
+      const container = document.getElementById('resultadosPesquisaMembroExistente');
+      container.innerHTML = '';
+
+      if (!termo || !grupoAtivoId) {
+        container.innerHTML = '<div style="font-size: 11px; color: #777;">Digite para buscar...</div>';
+        return;
+      }
+
+      const g = todosGrupos[grupoAtivoId];
+      if (!g) return;
+
+      let encontrados = 0;
+      Object.keys(todosUsuarios).forEach(username => {
+        if (username.includes(termo)) {
+          if (!g.membros.includes(username)) {
+            encontrados++;
+            const uData = todosUsuarios[username] || {};
+            const verifBadge = uData.verificado ? ' ✔' : '';
+
+            const item = document.createElement('div');
+            item.style.cssText = "display: flex; justify-content: space-between; align-items: center; padding: 4px; border-bottom: 1px solid #eee; font-size: 12px;";
+            item.innerHTML = `
+              <span>@${username}${verifBadge}</span>
+              <button class="btn-group" style="font-size: 10px; padding: 2px 6px;" onclick="confirmarAdicionarMembroAoGrupo('${username}')">+ Adicionar</button>
+            `;
+            container.appendChild(item);
+          }
+        }
+      });
+
+      if (encontrados === 0) {
+        container.innerHTML = '<div style="font-size: 11px; color: #777;">Nenhum usuário encontrado ou já está no grupo.</div>';
+      }
+    };
+
+    window.confirmarAdicionarMembroAoGrupo = async function(username) {
+      if (!grupoAtivoId) return;
+      const g = todosGrupos[grupoAtivoId];
+      if (!g) return;
+
+      let novosMembros = [...(g.membros || [])];
+      if (!novosMembros.includes(username)) {
+        novosMembros.push(username);
+        try {
+          await update(ref(db, `grupos/${grupoAtivoId}`), { membros: novosMembros });
+          
+          // Mensagem de sistema informando quem adicionou quem
+          await push(ref(db, `mensagens_grupos/${grupoAtivoId}`), {
+            remetente: "Sistema",
+            texto: `@${usuarioAtual} adicionou @${username} ao grupo.`,
+            timestamp: Date.now()
+          });
+
+          fecharModalAdicionarMembro();
+          alert(`@${username} foi adicionado ao grupo com sucesso!`);
+        } catch (err) {
+          alert("Erro ao adicionar membro: " + err.message);
+        }
+      }
+    };
+
+    // Alternar permissão de membros adicionarem (Exclusivo do Dono)
+    window.alternarPermissaoMembrosAdd = async function(permitir) {
+      if (!grupoAtivoId) return;
+      const g = todosGrupos[grupoAtivoId];
+      if (!g || g.criador !== usuarioAtual) return;
+
+      try {
+        await update(ref(db, `grupos/${grupoAtivoId}`), { membersCanAdd: permitir });
+        alert(`Configuração atualizada com sucesso!`);
+      } catch (err) {
+        alert("Erro ao atualizar permissão: " + err.message);
+      }
+    };
+
+    // Deletar grupo para sempre (Exclusivo do Dono)
+    window.donoDeletarGrupoParaSempre = async function() {
+      if (!grupoAtivoId) return;
+      const g = todosGrupos[grupoAtivoId];
+      if (!g || g.criador !== usuarioAtual) return;
+
+      if (!confirm("Tem certeza que deseja deletar este grupo permanentemente para todos os membros?")) return;
+
+      try {
+        // Remove mensagens e o grupo do Firebase
+        await remove(ref(db, `mensagens_grupos/${grupoAtivoId}`));
+        await remove(ref(db, `grupos/${grupoAtivoId}`));
+        alert("Grupo deletado para sempre.");
+        voltarParaListaGrupos();
+      } catch (err) {
+        alert("Erro ao deletar grupo: " + err.message);
+      }
+    };
+
+    // --- SAIR DO GRUPO (Com notificação contendo o nome) ---
     window.sairDoGrupo = async function() {
       if (!grupoAtivoId) return;
       if (!confirm("Tem certeza que deseja sair deste grupo?")) return;
 
       const grupoRef = ref(db, `grupos/${grupoAtivoId}`);
       const grupoObj = todosGrupos[grupoAtivoId];
-
       if (!grupoObj) return;
 
-      // Remove o usuário atual da lista de membros
       let novosMembros = (grupoObj.membros || []).filter(u => u !== usuarioAtual);
 
       try {
-        // Atualiza a lista de membros no Firebase
         await update(grupoRef, { membros: novosMembros });
 
-        // Envia a mensagem automática informando que saiu
+        // Notificação personalizada com o nome exato de quem saiu
         await push(ref(db, `mensagens_grupos/${grupoAtivoId}`), {
           remetente: "Sistema",
-          texto: `Ussuario saiu do grupo.`,
+          texto: `${usuarioAtual} saiu do grupo.`,
           timestamp: Date.now()
         });
 
@@ -1926,3 +2112,4 @@
   </script>
 </body>
 </html>
+
