@@ -225,9 +225,12 @@
 
       <!-- TELA DE CHAT DE GRUPO ESPECÍFICO -->
       <div id="groupChatView" class="hidden" style="border: 1px solid #ccc; background: #fafafa; padding: 15px; margin-bottom: 15px;">
-        <div style="display: flex; align-items: center; gap: 10px; border-bottom: 2px solid #8e24aa; padding-bottom: 10px; margin-bottom: 15px;">
-          <button onclick="voltarParaListaGrupos()" style="font-size: 12px;">← Voltar</button>
-          <h3 id="groupChatNameTitle" style="font-size: 15px; color: #4a148c;">Nome do Grupo</h3>
+        <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid #8e24aa; padding-bottom: 10px; margin-bottom: 15px;">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <button onclick="voltarParaListaGrupos()" style="font-size: 12px;">← Voltar</button>
+            <h3 id="groupChatNameTitle" style="font-size: 15px; color: #4a148c;">Nome do Grupo</h3>
+          </div>
+          <button class="btn-delete" style="font-size: 11px;" onclick="sairDoGrupo()">Sair do Grupo</button>
         </div>
         <div id="groupChatMessagesContainer" style="height: 250px; overflow-y: auto; background: #fff; border: 1px solid #ddd; padding: 10px; margin-bottom: 10px; display: flex; flex-direction: column; gap: 8px;"></div>
         <div>
@@ -822,6 +825,37 @@
       abrirAbaGrupos();
     };
 
+    // NOVA FUNÇÃO: SAIR DO GRUPO
+    window.sairDoGrupo = async function() {
+      if (!grupoAtivoId) return;
+      if (!confirm("Tem certeza que deseja sair deste grupo?")) return;
+
+      const grupoRef = ref(db, `grupos/${grupoAtivoId}`);
+      const grupoObj = todosGrupos[grupoAtivoId];
+
+      if (!grupoObj) return;
+
+      // Remove o usuário atual da lista de membros
+      let novosMembros = (grupoObj.membros || []).filter(u => u !== usuarioAtual);
+
+      try {
+        // Atualiza a lista de membros no Firebase
+        await update(grupoRef, { membros: novosMembros });
+
+        // Envia a mensagem automática informando que saiu
+        await push(ref(db, `mensagens_grupos/${grupoAtivoId}`), {
+          remetente: "Sistema",
+          texto: `Ussuario saiu do grupo.`,
+          timestamp: Date.now()
+        });
+
+        alert("Você saiu do grupo com sucesso!");
+        voltarParaListaGrupos();
+      } catch (err) {
+        alert("Erro ao sair do grupo: " + err.message);
+      }
+    };
+
     function carregarMensagensDoGrupo(gKey) {
       const container = document.getElementById('groupChatMessagesContainer');
       container.innerHTML = '<div style="font-size: 11px; color: #777;">Carregando mensagens do grupo...</div>';
@@ -836,19 +870,30 @@
         const msgs = snap.val();
         Object.keys(msgs).forEach(mKey => {
           const m = msgs[mKey];
+          const ehSistema = m.remetente === "Sistema";
           const ehMeu = m.remetente === usuarioAtual;
-          const alinhamento = ehMeu ? 'align-self: flex-end; background: #f3e5f5;' : 'align-self: flex-start; background: #fff; border: 1px solid #ddd;';
+          
+          let alinhamento = ehMeu ? 'align-self: flex-end; background: #f3e5f5;' : 'align-self: flex-start; background: #fff; border: 1px solid #ddd;';
+          if (ehSistema) {
+            alinhamento = 'align-self: center; background: #eee; border: 1px dashed #ccc; text-align: center; width: 100%;';
+          }
+
           const horaStr = new Date(m.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
           const autorData = todosUsuarios[m.remetente] || {};
           const verifBadge = autorData.verificado ? ' ✔' : '';
 
           const balao = document.createElement('div');
           balao.style.cssText = `max-width: 75%; padding: 8px; border-radius: 6px; font-size: 13px; margin-bottom: 5px; word-break: break-word; ${alinhamento}`;
-          balao.innerHTML = `
-            <div style="font-size: 11px; font-weight: bold; color: #4a148c; margin-bottom: 2px;">@${m.remetente}${verifBadge}</div>
-            <div>${m.texto}</div>
-            <div style="font-size: 9px; color: #666; text-align: right; margin-top: 3px;">${horaStr}</div>
-          `;
+          
+          if (ehSistema) {
+            balao.innerHTML = `<div style="font-size: 11px; color: #555; font-style: italic;">${m.texto}</div>`;
+          } else {
+            balao.innerHTML = `
+              <div style="font-size: 11px; font-weight: bold; color: #4a148c; margin-bottom: 2px;">@${m.remetente}${verifBadge}</div>
+              <div>${m.texto}</div>
+              <div style="font-size: 9px; color: #666; text-align: right; margin-top: 3px;">${horaStr}</div>
+            `;
+          }
           container.appendChild(balao);
         });
 
