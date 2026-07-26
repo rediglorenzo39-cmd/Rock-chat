@@ -197,7 +197,10 @@
             <div id="profAvatarText" style="font-size: 10px; color: #666; text-align: center; margin-top: 2px;">(Mudar foto)</div>
           </div>
           <div style="flex: 1;">
-            <h3 id="profName">@usuario</h3>
+            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 5px;">
+              <h3 id="profName">@usuario</h3>
+              <button id="btnEditarNome" class="hidden" style="font-size: 11px; padding: 3px 8px;" onclick="abrirModalEditarNome()">✏️ Editar Nome</button>
+            </div>
             <div style="font-size: 13px; margin: 8px 0;">
               Seguidores: <strong id="profSeguidores">0</strong> | Seguindo: <strong id="profSeguindo">0</strong>
             </div>
@@ -345,6 +348,19 @@
       <div style="margin-top: 15px; display: flex; justify-content: center; gap: 10px;">
         <button class="btn-delete" onclick="confirmarDeletarPost()">Excluir para sempre</button>
         <button onclick="fecharModalExclusao()">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL DE EDIÇÃO DE NOME DE USUÁRIO -->
+  <div id="modalEditarNome" class="modal-overlay hidden">
+    <div class="modal-box" style="max-width: 350px; text-align: left;">
+      <h4 style="margin-bottom: 10px; text-align: center;">✏️ Alterar Nome de Usuário</h4>
+      <label style="font-size: 12px; font-weight: bold; display: block; margin-bottom: 4px;">Novo nome de usuário:</label>
+      <input type="text" id="novoNomeUsuarioInput" placeholder="Digite o novo nome..." style="width: 100%; margin-bottom: 12px;">
+      <div style="display: flex; justify-content: flex-end; gap: 8px;">
+        <button onclick="salvarNovoNomeUsuario()" style="font-weight: bold; background: #e8f5e9; border-color: #2e7d32; color: #1b5e20;">Salvar</button>
+        <button onclick="fecharModalEditarNome()">Cancelar</button>
       </div>
     </div>
   </div>
@@ -687,6 +703,92 @@
       document.getElementById('adminView').classList.remove('hidden');
       perfilAberto = null;
       renderizarPainelAdmin();
+    };
+
+    // --- FUNÇÕES DE EDIÇÃO DE NOME DE USUÁRIO ---
+    window.abrirModalEditarNome = function() {
+      document.getElementById('novoNomeUsuarioInput').value = usuarioAtual;
+      document.getElementById('modalEditarNome').classList.remove('hidden');
+    };
+
+    window.fecharModalEditarNome = function() {
+      document.getElementById('modalEditarNome').classList.add('hidden');
+    };
+
+    window.salvarNovoNomeUsuario = async function() {
+      const novoNome = document.getElementById('novoNomeUsuarioInput').value.trim().toLowerCase();
+      
+      if (!novoNome) {
+        alert("Digite um nome válido!");
+        return;
+      }
+      if (novoNome === usuarioAtual) {
+        fecharModalEditarNome();
+        return;
+      }
+      if (/[.#$\[\]]/.test(novoNome)) {
+        alert("O nome contém caracteres inválidos.");
+        return;
+      }
+
+      try {
+        const snapNovo = await get(child(ref(db), `usuarios/${novoNome}`));
+        if (snapNovo.exists()) {
+          alert("Este nome de usuário já está em uso por outra pessoa!");
+          return;
+        }
+
+        // Pega dados do usuário atual
+        const snapAtual = await get(child(ref(db), `usuarios/${usuarioAtual}`));
+        const dadosUsuario = snapAtual.val();
+
+        const updates = {};
+        // Cria o novo registro e apaga o antigo
+        updates[`usuarios/${novoNome}`] = dadosUsuario;
+        updates[`usuarios/${usuarioAtual}`] = null;
+
+        // Atualiza posts feitos pelo usuário
+        Object.keys(todosPosts).forEach(pKey => {
+          if (todosPosts[pKey].autor === usuarioAtual) {
+            updates[`posts/${pKey}/autor`] = novoNome;
+          }
+          // Atualiza curtidas nos posts
+          if (todosPosts[pKey].likes && todosPosts[pKey].likes[usuarioAtual]) {
+            updates[`posts/${pKey}/likes/${usuarioAtual}`] = null;
+            updates[`posts/${pKey}/likes/${novoNome}`] = true;
+          }
+          // Atualiza comentários
+          if (todosPosts[pKey].comentarios) {
+            Object.keys(todosPosts[pKey].comentarios).forEach(cKey => {
+              if (todosPosts[pKey].comentarios[cKey].autor === usuarioAtual) {
+                updates[`posts/${pKey}/comentarios/${cKey}/autor`] = novoNome;
+              }
+            });
+          }
+        });
+
+        // Atualiza grupos
+        Object.keys(todosGrupos).forEach(gKey => {
+          const g = todosGrupos[gKey];
+          if (g.criador === usuarioAtual) {
+            updates[`grupos/${gKey}/criador`] = novoNome;
+          }
+          if (g.membros && g.membros.includes(usuarioAtual)) {
+            const novosMembros = g.membros.map(m => m === usuarioAtual ? novoNome : m);
+            updates[`grupos/${gKey}/membros`] = novosMembros;
+          }
+        });
+
+        await update(ref(db), updates);
+
+        localStorage.setItem('rockchat_usuario_logado', novoNome);
+        usuarioAtual = novoNome;
+        fecharModalEditarNome();
+        alert("Nome de usuário alterado com sucesso!");
+        abrirMeuPerfil();
+      } catch (err) {
+        alert("Erro ao alterar nome: " + err.message);
+      }
     };
 
     // --- FUNÇÕES DE GRUPOS ATUALIZADAS ---
@@ -2054,6 +2156,7 @@
 
       const profCard = document.getElementById('profileCardBox');
       const profAvatar = document.getElementById('profAvatar');
+      const btnEditar = document.getElementById('btnEditarNome');
 
       if (isVerificado) {
         profCard.classList.add('profile-verified');
@@ -2061,6 +2164,12 @@
       } else {
         profCard.classList.remove('profile-verified');
         profAvatar.classList.remove('avatar-verified');
+      }
+
+      if (nomeUser === usuarioAtual) {
+        btnEditar.classList.remove('hidden');
+      } else {
+        btnEditar.classList.add('hidden');
       }
 
       const followBtn = document.getElementById('profFollowBtn');
