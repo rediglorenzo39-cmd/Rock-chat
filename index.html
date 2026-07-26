@@ -1,270 +1,1217 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RockChat - Perfil e Temas</title>
-    
-    <!-- Seus estilos CSS integrados -->
-    <style>
-        body {
-            background-color: #121212;
-            color: #fff;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rock Chat</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+    }
 
-        /* Container principal do perfil */
-        .perfil-container {
-            width: 100%;
-            max-width: 450px;
-            padding: 30px;
-            border-radius: 16px;
-            transition: all 0.4s ease;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.4);
-            box-sizing: border-box;
-        }
+    body {
+      background-color: #f0f2f5;
+      color: #333;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
 
-        /* --- TEMA PADRÃO (Dark Clean) --- */
-        .perfil-container.tema-padrao {
-            background-color: #1e1e1e;
-            color: #ffffff;
-            border: 1px solid #333;
-        }
-        .tema-padrao .perfil-btn {
-            background-color: #007bff;
-            color: white;
-        }
+    .hidden {
+      display: none !important;
+    }
 
-        /* --- TEMA FOGO (Laranja, Vermelho e Amarelo) --- */
-        .perfil-container.tema-fogo {
-            background: linear-gradient(135deg, #ff4500, #ff8c00, #ff2a00);
-            color: #ffffff;
-            border: 2px solid #ffd700;
-            box-shadow: 0 0 25px rgba(255, 69, 0, 0.6);
-        }
-        .tema-fogo .perfil-btn {
-            background-color: #1a0000;
-            color: #ffaa00;
-            border: 1px solid #ffd700;
-        }
+    /* Container Principal para simular tela de app/mobile */
+    #app-container {
+      width: 100%;
+      max-width: 480px;
+      background: #ffffff;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      position: relative;
+    }
 
-        /* --- TEMA FLOR (Tons de Rosa e Magenta) --- */
-        .perfil-container.tema-flor {
-            background: linear-gradient(135deg, #ff69b4, #ff1493, #db7093);
-            color: #ffffff;
-            border: 2px solid #ffb6c1;
-            box-shadow: 0 0 25px rgba(255, 105, 180, 0.6);
-        }
-        .tema-flor .perfil-btn {
-            background-color: #4a0e2e;
-            color: #ffb6c1;
-            border: 1px solid #ffb6c1;
-        }
+    header {
+      background: #000;
+      color: #fff;
+      padding: 12px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: bold;
+    }
 
-        /* --- TEMA NEON (Azul Ciano / Cyber) --- */
-        .perfil-container.tema-neon {
-            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
-            color: #00ffcc;
-            border: 2px solid #00ffcc;
-            box-shadow: 0 0 25px rgba(0, 255, 204, 0.4);
-        }
-        .tema-neon .perfil-btn {
-            background-color: #00ffcc;
-            color: #0f2027;
-        }
+    /* Navegação Inferior */
+    nav {
+      background: #fff;
+      border-top: 1px solid #ddd;
+      display: flex;
+      justify-content: space-around;
+      padding: 8px 0;
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      max-width: 480px;
+      z-index: 1000;
+    }
 
-        /* Elementos internos */
-        .perfil-container h2 {
-            margin-top: 0;
-            text-align: center;
-            font-size: 22px;
-            margin-bottom: 25px;
-        }
+    nav button {
+      background: none;
+      border: none;
+      font-size: 11px;
+      cursor: pointer;
+      color: #555;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+    }
 
-        .perfil-info {
-            margin-bottom: 20px;
-        }
+    nav button.active {
+      color: #ff007f;
+      font-weight: bold;
+    }
 
-        .perfil-info label {
-            display: block;
-            font-size: 14px;
-            margin-bottom: 8px;
-            font-weight: bold;
-        }
+    .content-body {
+      flex: 1;
+      padding: 12px;
+      padding-bottom: 70px; /* espaço para a nav inferior */
+      overflow-y: auto;
+    }
 
-        .perfil-info input, .perfil-info select {
-            width: 100%;
-            padding: 12px;
-            border-radius: 8px;
-            border: 1px solid rgba(255,255,255,0.3);
-            background: rgba(0,0,0,0.25);
-            color: inherit;
-            font-size: 16px;
-            outline: none;
-            box-sizing: border-box;
-        }
+    /* Estilos de Posts */
+    .post-box {
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 10px;
+      margin-bottom: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      position: relative;
+    }
 
-        .perfil-info select option {
-            background: #222;
-            color: #fff;
-        }
+    .post-verified {
+      border: 2px solid #ff007f;
+    }
 
-        .perfil-btn {
-            width: 100%;
-            padding: 14px;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: 0.2s;
-            margin-top: 10px;
-        }
+    .foryou-badge {
+      font-size: 10px;
+      background: #ff007f;
+      color: #fff;
+      padding: 2px 6px;
+      border-radius: 4px;
+      display: inline-block;
+      margin-bottom: 6px;
+    }
 
-        .perfil-btn:hover {
-            opacity: 0.9;
-            transform: scale(1.01);
-        }
-    </style>
+    .post-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .avatar-mini {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      object-fit: cover;
+      cursor: pointer;
+      border: 1px solid #ccc;
+    }
+
+    .avatar-verified {
+      border: 2px solid #ff007f;
+    }
+
+    .badge-verified {
+      color: #ff007f;
+      font-weight: bold;
+    }
+
+    .sparkle-icon {
+      font-size: 12px;
+    }
+
+    .post-content {
+      font-size: 13px;
+      margin-bottom: 8px;
+      word-break: break-word;
+    }
+
+    .post-image-big, .post-video-big {
+      width: 100%;
+      max-height: 300px;
+      object-fit: cover;
+      border-radius: 6px;
+      margin-bottom: 8px;
+    }
+
+    .post-footer {
+      display: flex;
+      gap: 10px;
+      border-top: 1px solid #eee;
+      padding-top: 6px;
+    }
+
+    .post-footer button {
+      background: none;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      cursor: pointer;
+      color: #333;
+    }
+
+    /* Comentários */
+    .comments-section {
+      background: #f9f9f9;
+      border-top: 1px solid #eee;
+      margin-top: 8px;
+      padding-top: 8px;
+    }
+
+    .comment-item {
+      font-size: 12px;
+      margin-bottom: 4px;
+      padding-left: 5px;
+      border-left: 2px solid #ff007f;
+    }
+
+    /* Perfil */
+    .profile-card {
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 16px;
+      text-align: center;
+      margin-bottom: 12px;
+    }
+
+    .profile-verified {
+      border: 2px solid #ff007f;
+    }
+
+    .profile-avatar-large {
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin: 0 auto 8px auto;
+      border: 2px solid #ccc;
+      cursor: pointer;
+    }
+
+    /* Modais / Telas de Autenticação */
+    .auth-screen {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #fff;
+      z-index: 2000;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .auth-box {
+      width: 100%;
+      max-width: 320px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .auth-box input {
+      padding: 10px;
+      font-size: 14px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+
+    .auth-box button {
+      padding: 10px;
+      font-size: 14px;
+      background: #000;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      z-index: 3000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .modal-content {
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      width: 100%;
+      max-width: 320px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+  </style>
 </head>
 <body>
 
-    <!-- Estrutura HTML do Perfil -->
-    <div id="perfil-view" class="perfil-container tema-padrao">
-        <h2>Editar Perfil - RockChat</h2>
-        
-        <div class="perfil-info">
-            <label for="inputNome">Nome de Usuário (Único):</label>
-            <input type="text" id="inputNome" placeholder="Digite seu nome...">
-        </div>
-
-        <div class="perfil-info">
-            <label for="selectTema">Tema de Fundo do Perfil:</label>
-            <select id="selectTema">
-                <option value="padrao">Padrão (Dark)</option>
-                <option value="fogo">🔥 Fogo (Laranja / Vermelho)</option>
-                <option value="flor">🌸 Flor (Rosa / Magenta)</option>
-                <option value="neon">⚡ Neon (Ciano / Cyber)</option>
-            </select>
-        </div>
-
-        <button class="perfil-btn" onclick="salvarPerfilCompleto()">Salvar Alterações</button>
+  <div id="app-container">
+    
+    <!-- TELA DE AUTENTICAÇÃO (LOGIN / CADASTRO) -->
+    <div id="authScreen" class="auth-screen">
+      <div class="auth-box">
+        <h2 style="text-align: center; margin-bottom: 10px; color: #000;">Rock Chat</h2>
+        <input type="text" id="authUsername" placeholder="Nome de usuário">
+        <input type="password" id="authPassword" placeholder="Senha">
+        <button onclick="realizarLogin()">Entrar</button>
+        <button style="background: #333;" onclick="realizarCadastro()">Criar Conta</button>
+        <div id="authMsg" style="font-size: 12px; color: red; text-align: center;"></div>
+      </div>
     </div>
 
-    <!-- Scripts do Firebase (Certifique-se de que sua inicializacao do firebase ja esta carregada no app) -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <!-- HEADER GLOBAL -->
+    <header>
+      <span>Rock Chat</span>
+      <span id="headerUserDisplay" style="font-size: 12px; font-weight: normal;"></span>
+    </header>
 
-    <script>
-        // CONFIGURAÇÃO DO FIREBASE (Substitua pelos dados reais do seu projeto do RockChat se já não estiverem em outro arquivo)
-        /*
-        const firebaseConfig = {
-            apiKey: "SUA_API_KEY",
-            authDomain: "SEU_AUTH_DOMAIN",
-            projectId: "SEU_PROJECT_ID",
-            storageBucket: "SEU_STORAGE_BUCKET",
-            messagingSenderId: "SEU_MESSAGING_SENDER_ID",
-            appId: "SEU_APP_ID"
+    <!-- CONTEÚDO PRINCIPAL / ABAS -->
+    <div class="content-body">
+
+      <!-- ABA: FEED GERAL -->
+      <div id="feedView" class="tab-view">
+        <div style="background: #fff; border: 1px solid #ddd; padding: 10px; border-radius: 8px; margin-bottom: 12px;">
+          <textarea id="tweetContent" placeholder="O que está acontecendo?" style="width: 100%; border: none; resize: none; font-size: 13px; outline: none;" rows="3"></textarea>
+          
+          <div id="postMediaPreviewContainer" class="hidden" style="margin-bottom: 8px; position: relative;">
+            <img id="postImagePreview" class="hidden" style="width: 100%; max-height: 150px; object-fit: cover; border-radius: 4px;">
+            <video id="postVideoPreview" class="hidden" style="width: 100%; max-height: 150px; object-fit: cover; border-radius: 4px;" controls></video>
+            <button onclick="removerMidiaPost()" style="position: absolute; top: 4px; right: 4px; background: rgba(0,0,0,0.7); color: #fff; border: none; font-size: 10px; padding: 2px 6px; cursor: pointer;">Remover</button>
+          </div>
+
+          <input type="file" id="postFileInput" class="hidden" accept="image/*,video/*" onchange="carregarPreviaMidiaPost(event)">
+
+          <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #eee; padding-top: 6px;">
+            <button onclick="triggerMidiaPostUpload()" style="background: none; border: none; cursor: pointer; font-size: 16px;" title="Adicionar Foto/Vídeo">📷</button>
+            <button id="btnPublicar" onclick="publicarPost()" style="background: #ff007f; color: #fff; border: none; padding: 6px 14px; border-radius: 4px; font-size: 12px; cursor: pointer;">Publicar no Rock Chat</button>
+          </div>
+        </div>
+
+        <div id="feedContainer"></div>
+      </div>
+
+      <!-- ABA: FOR YOU (DESTAQUES) -->
+      <div id="foryouView" class="tab-view hidden">
+        <h3 style="font-size: 14px; margin-bottom: 10px; color: #ff007f;">✨ Destaques para Você</h3>
+        <div id="foryouContainer"></div>
+      </div>
+
+      <!-- ABA: BUSCA DE PERFIS -->
+      <div id="searchView" class="tab-view hidden">
+        <div style="display: flex; gap: 5px; margin-bottom: 10px;">
+          <input type="text" id="searchInput" placeholder="Pesquisar @usuário..." style="flex: 1; padding: 6px; font-size: 12px; border: 1px solid #ccc; border-radius: 4px;" oninput="buscarPerfis()">
+        </div>
+        <div id="searchResults"></div>
+      </div>
+
+      <!-- ABA: PAINEL DO ADMIN / SELO VERIFICADO -->
+      <div id="adminView" class="tab-view hidden">
+        <div style="background: #fff; border: 1px solid #ddd; padding: 12px; border-radius: 8px;">
+          <h3 style="font-size: 14px; margin-bottom: 8px; color: #ff007f;">Painel de Solicitações (Verificado)</h3>
+          <div id="adminSolicitacoesContainer"></div>
+        </div>
+        
+        <div style="background: #fff; border: 1px solid #ddd; padding: 12px; border-radius: 8px; margin-top: 12px;">
+          <h3 style="font-size: 14px; margin-bottom: 6px;">Resgatar Código Pix / Selo</h3>
+          <input type="text" id="codigoResgateInput" placeholder="Digite o ID/Código da Transação" style="width: 100%; padding: 6px; font-size: 12px; border: 1px solid #ccc; border-radius: 4px; margin-bottom: 6px;">
+          <button onclick="resgatarCodigoVerificado()" style="width: 100%; background: #000; color: #fff; border: none; padding: 6px; font-size: 12px; border-radius: 4px; cursor: pointer;">Resgatar Selo Verificado</button>
+          <div id="resgateMsg" style="font-size: 11px; margin-top: 4px; text-align: center;"></div>
+        </div>
+      </div>
+
+      <!-- ABA: PERFIL -->
+      <div id="profileView" class="tab-view hidden">
+        <div id="profileCardBox" class="profile-card">
+          <input type="file" id="fileInput" class="hidden" accept="image/*" onchange="uploadFotoPerfil(event)">
+          <img id="profAvatar" class="profile-avatar-large" src="https://via.placeholder.com/70/ccc/666?text=Foto" onclick="triggerFotoUpload()" title="Alterar foto de perfil">
+          <div id="profAvatarText" class="hidden" style="font-size: 10px; color: #666; margin-bottom: 6px;">Clique na foto para alterar</div>
+          
+          <h2 id="profName" style="font-size: 15px; margin-bottom: 4px;">@usuario</h2>
+          
+          <div style="display: flex; justify-content: center; gap: 20px; font-size: 12px; margin: 10px 0;">
+            <div><strong>Seguidores:</strong> <span id="profSeguidores">0</span></div>
+            <div><strong>Seguindo:</strong> <span id="profSeguindo">0</span></div>
+          </div>
+
+          <div style="display: flex; justify-content: center; gap: 8px; margin-top: 10px;">
+            <button id="profFollowBtn" class="hidden" onclick="toggleSeguir()" style="font-size: 11px; padding: 4px 12px; border-radius: 4px; cursor: pointer;">Seguir</button>
+            <button id="profMsgBtn" class="hidden" style="font-size: 11px; padding: 4px 12px; border-radius: 4px; border: 1px solid #ccc; background: #fff; cursor: pointer;">Mensagem</button>
+            <button id="profCallBtn" class="hidden" style="font-size: 11px; padding: 4px 12px; border-radius: 4px; border: 1px solid #ccc; background: #fff; cursor: pointer;">Ligar</button>
+            <button id="btnEditarNome" class="hidden" onclick="abrirModalSolicitarVerificacao()" style="font-size: 11px; padding: 4px 12px; border-radius: 4px; background: #ff007f; color: #fff; border: none; cursor: pointer;">✨ Pedir Verificado</button>
+          </div>
+        </div>
+
+        <h4 style="font-size: 13px; margin-bottom: 8px;">Publicações</h4>
+        <div id="profileFeedContainer"></div>
+      </div>
+
+    </div>
+
+    <!-- MENU DE NAVEGAÇÃO INFERIOR -->
+    <nav id="bottomNav" class="hidden">
+      <button id="navBtnFeed" class="active" onclick="mudarAba('feed')"><span>🏠</span><span>Feed</span></button>
+      <button id="navBtnForyou" onclick="mudarAba('foryou')"><span>✨</span><span>For You</span></button>
+      <button id="navBtnSearch" onclick="mudarAba('search')"><span>🔍</span><span>Busca</span></button>
+      <button id="navBtnAdmin" class="hidden" onclick="mudarAba('admin')"><span>⚙️</span><span>Admin</span></button>
+      <button id="navBtnProfile" onclick="abrirMeuPerfil()"><span>👤</span><span>Perfil</span></button>
+    </nav>
+
+    <!-- MODAL DE EXCLUSÃO DE POST -->
+    <div id="confirmModal" class="modal-overlay hidden">
+      <div class="modal-content">
+        <h3 style="font-size: 14px;">Excluir Postagem</h3>
+        <p style="font-size: 12px; color: #666;">Tem certeza que deseja apagar este post?</p>
+        <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 10px;">
+          <button onclick="fecharModalExclusao()" style="font-size: 11px; padding: 4px 10px; background: #ccc; border: none; border-radius: 4px; cursor: pointer;">Cancelar</button>
+          <button onclick="confirmarDeletarPost()" style="font-size: 11px; padding: 4px 10px; background: #ff007f; color: #fff; border: none; border-radius: 4px; cursor: pointer;">Excluir</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL DE SOLICITAÇÃO DE VERIFICAÇÃO -->
+    <div id="verifModal" class="modal-overlay hidden">
+      <div class="modal-content">
+        <h3 style="font-size: 14px; color: #ff007f;">✨ Solicitar Selo Verificado</h3>
+        <p style="font-size: 11px; color: #666;">O selo verificado tem validade de 5 dias mediante taxa/confirmação. Envie o comprovante ou ID de transação PIX:</p>
+        <input type="text" id="verifPixInput" placeholder="ID da Transação / Comprovante Pix" style="font-size: 12px; padding: 6px; border: 1px solid #ccc; border-radius: 4px;">
+        <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 6px;">
+          <button onclick="fecharModalSolicitarVerificacao()" style="font-size: 11px; padding: 4px 10px; background: #ccc; border: none; border-radius: 4px; cursor: pointer;">Cancelar</button>
+          <button onclick="enviarSolicitacaoVerificado()" style="font-size: 11px; padding: 4px 10px; background: #ff007f; color: #fff; border: none; border-radius: 4px; cursor: pointer;">Enviar Pedido</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- SCRIPT DO FIREBASE E APLICAÇÃO -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+    import { getDatabase, ref, set, get, child, update, remove, push, onValue } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
+
+    const firebaseConfig = {
+      databaseURL: "https://rock-chat-default-rtdb.firebaseio.com/"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    const ADMIN_USER = "admin";
+    const CLOUDINARY_CLOUD_NAME = "seu_cloud_name"; // Substitua se necessário
+    const CLOUDINARY_UPLOAD_PRESET = "seu_upload_preset"; // Substitua se necessário
+
+    let usuarioAtual = null;
+    let modoAtual = 'feed';
+    let perfilAberto = null;
+    let arquivoSelecionado = null;
+    let tipoMidiaPost = null;
+    let postParaDeletar = null;
+    let todosPosts = {};
+    let todosUsuarios = {};
+
+    // Inicialização da escuta global de usuários
+    onValue(ref(db, 'usuarios'), (snapshot) => {
+      todosUsuarios = snapshot.val() || {};
+      if (usuarioAtual && todosUsuarios[usuarioAtual]) {
+        // Atualizar interface se necessário
+        if (modoAtual === 'profile' && perfilAberto === usuarioAtual) {
+          carregarPerfil(usuarioAtual);
+        }
+      }
+    });
+
+    window.realizarLogin = async function() {
+      const u = document.getElementById('authUsername').value.trim().toLowerCase();
+      const p = document.getElementById('authPassword').value;
+      const msgEl = document.getElementById('authMsg');
+
+      if (!u || !p) {
+        msgEl.innerText = "Preencha todos os campos!";
+        return;
+      }
+
+      try {
+        const snap = await get(child(ref(db), `usuarios/${u}`));
+        if (!snap.exists()) {
+          msgEl.innerText = "Usuário não encontrado!";
+          return;
+        }
+
+        const dados = snap.val();
+        if (dados.senha !== p) {
+          msgEl.innerText = "Senha incorreta!";
+          return;
+        }
+
+        usuarioAtual = u;
+        finalizarAutenticacao();
+      } catch (err) {
+        msgEl.innerText = "Erro ao entrar: " + err.message;
+      }
+    };
+
+    window.realizarCadastro = async function() {
+      const u = document.getElementById('authUsername').value.trim().toLowerCase();
+      const p = document.getElementById('authPassword').value;
+      const msgEl = document.getElementById('authMsg');
+
+      if (!u || !p) {
+        msgEl.innerText = "Preencha todos os campos!";
+        return;
+      }
+
+      if (u.length < 3) {
+        msgEl.innerText = "O nome de usuário deve ter ao menos 3 caracteres.";
+        return;
+      }
+
+      try {
+        const snap = await get(child(ref(db), `usuarios/${u}`));
+        if (snap.exists()) {
+          msgEl.innerText = "Este usuário já existe!";
+          return;
+        }
+
+        const novoUser = {
+          senha: p,
+          verificado: u === ADMIN_USER,
+          foto: "https://via.placeholder.com/70/ccc/666?text=Foto"
         };
-        firebase.initializeApp(firebaseConfig);
-        */
 
-        const db = firebase.firestore();
+        await set(ref(db, `usuarios/${u}`), novoUser);
+        usuarioAtual = u;
+        finalizarAutenticacao();
+      } catch (err) {
+        msgEl.innerText = "Erro ao cadastrar: " + err.message;
+      }
+    };
 
-        // Quando a página carregar, puxa os dados do usuário logado
-        firebase.auth().onAuthStateChanged(async (user) => {
-            if (user) {
-                carregarDadosPerfil(user.uid);
-            } else {
-                console.log("Usuário não logado.");
-            }
+    function finalizarAutenticacao() {
+      document.getElementById('authScreen').classList.add('hidden');
+      document.getElementById('bottomNav').classList.remove('hidden');
+      document.getElementById('headerUserDisplay').innerText = `@${usuarioAtual}`;
+
+      if (usuarioAtual === ADMIN_USER) {
+        document.getElementById('navBtnAdmin').classList.remove('hidden');
+        carregarSolicitacoesAdmin();
+      } else {
+        document.getElementById('navBtnAdmin').classList.add('hidden');
+      }
+
+      mudarAba('feed');
+      carregarPostsGerais();
+    }
+
+    window.mudarAba = function(nomeAba) {
+      modoAtual = nomeAba;
+      esconderTodasAsAbas();
+
+      document.querySelectorAll('#bottomNav button').forEach(b => b.classList.remove('active'));
+
+      if (nomeAba === 'feed') {
+        document.getElementById('feedView').classList.remove('hidden');
+        document.getElementById('navBtnFeed').classList.add('active');
+        renderizarFeed(todosPosts, 'feedContainer', false);
+      } else if (nomeAba === 'foryou') {
+        document.getElementById('foryouView').classList.remove('hidden');
+        document.getElementById('navBtnForyou').classList.add('active');
+        renderizarFeed(todosPosts, 'foryouContainer', true);
+      } else if (nomeAba === 'search') {
+        document.getElementById('searchView').classList.remove('hidden');
+        document.getElementById('navBtnSearch').classList.add('active');
+      } else if (nomeAba === 'admin') {
+        document.getElementById('adminView').classList.remove('hidden');
+        document.getElementById('navBtnAdmin').classList.add('active');
+        carregarSolicitacoesAdmin();
+      }
+    };
+
+    function esconderTodasAsAbas() {
+      document.querySelectorAll('.content-body > div').forEach(div => div.classList.add('hidden'));
+    }
+
+    // --- FUNÇÕES DE VERIFICAÇÃO E ADMIN ---
+    window.abrirModalSolicitarVerificacao = function() {
+      document.getElementById('verifModal').classList.remove('hidden');
+      document.getElementById('verifPixInput').value = '';
+    };
+
+    window.fecharModalSolicitarVerificacao = function() {
+      document.getElementById('verifModal').classList.add('hidden');
+    };
+
+    window.enviarSolicitacaoVerificado = async function() {
+      const idPix = document.getElementById('verifPixInput').value.trim();
+      if (!idPix) {
+        alert("Informe o ID de transação ou comprovante!");
+        return;
+      }
+
+      try {
+        const reqId = push(ref(db, 'historico pix')).key;
+        await set(ref(db, `historico pix/${reqId}`), {
+          usuario: usuarioAtual,
+          idPix: idPix,
+          status: 'pendente',
+          timestamp: Date.now()
         });
 
-        async function carregarDadosPerfil(userId) {
-            try {
-                const doc = await db.collection('users').doc(userId).get();
-                if (doc.exists) {
-                    const dados = doc.data();
-                    
-                    // Preenche os campos com o que já está salvo
-                    document.getElementById('inputNome').value = dados.username || '';
-                    document.getElementById('selectTema').value = dados.temaPerfil || 'padrao';
-                    
-                    // Aplica o tema visualmente
-                    aplicarTemaVisual(dados.temaPerfil || 'padrao');
-                }
-            } catch (error) {
-                console.error("Erro ao carregar perfil:", error);
-            }
+        fecharModalSolicitarVerificacao();
+        alert("Solicitação enviada com sucesso! Aguarde a aprovação do administrador.");
+      } catch (err) {
+        alert("Erro ao enviar solicitação: " + err.message);
+      }
+    };
+
+    function carregarSolicitacoesAdmin() {
+      const container = document.getElementById('adminSolicitacoesContainer');
+      const histRef = ref(db, 'historico pix');
+
+      onValue(histRef, (snap) => {
+        const dados = snap.val() || {};
+        container.innerHTML = '';
+
+        const keys = Object.keys(dados);
+        const pendentes = keys.filter(k => dados[k].status === 'pendente');
+
+        if (pendentes.length === 0) {
+          container.innerHTML = '<div style="font-size: 11px; color: #777;">Nenhuma solicitação pendente no momento.</div>';
+          return;
         }
 
-        // Altera o tema visualmente em tempo real quando o usuário mexe no select
-        document.getElementById('selectTema').addEventListener('change', (e) => {
-            aplicarTemaVisual(e.target.value);
+        pendentes.forEach(reqId => {
+          const item = dados[reqId];
+          const div = document.createElement('div');
+          div.style.cssText = "background: #f9f9f9; border: 1px solid #ddd; padding: 8px; margin-bottom: 6px; border-radius: 4px; font-size: 12px;";
+          div.innerHTML = `
+            <div><strong>Usuário:</strong> @${item.usuario}</div>
+            <div><strong>Comprovante/ID:</strong> ${item.idPix}</div>
+            <div style="margin-top: 6px;">
+              <button style="background: #28a745; color: #fff; border: none; padding: 4px 8px; border-radius: 3px; cursor: pointer;" onclick="aprovarParaSolicitacoes('${reqId}', '${item.usuario}', '${item.idPix}')">Aprovar (5 dias)</button>
+            </div>
+          `;
+          container.appendChild(div);
+        });
+      });
+    }
+
+    window.aprovarParaSolicitacoes = async function(reqId, username, idPix) {
+      if (usuarioAtual !== ADMIN_USER) return;
+
+      try {
+        const cincoDiasMs = 5 * 24 * 60 * 60 * 1000;
+        const expiraEm = Date.now() + cincoDiasMs;
+
+        await update(ref(db, `historico pix/${reqId}`), { status: 'aprovado' });
+
+        await update(ref(db, `usuarios/${username}`), {
+          verificado: true,
+          verificadoExpira: expiraEm
         });
 
-        function aplicarTemaVisual(tema) {
-            const container = document.getElementById('perfil-view');
-            container.className = `perfil-container tema-${tema}`;
+        await set(ref(db, `solicitacoes_verificado/${idPix}`), {
+          usuario: username,
+          aprovadoEm: Date.now(),
+          expiraEm: expiraEm
+        });
+
+        alert(`Selo verificado aprovado com sucesso para @${username}! Validade: 5 dias.`);
+      } catch (err) {
+        alert("Erro ao aprovar: " + err.message);
+      }
+    };
+
+    window.resgatarCodigoVerificado = async function() {
+      const codigo = document.getElementById('codigoResgateInput').value.trim();
+      const msgEl = document.getElementById('resgateMsg');
+
+      if (!codigo) {
+        msgEl.style.color = "red";
+        msgEl.innerText = "Digite o código/ID de transação!";
+        return;
+      }
+
+      msgEl.style.color = "blue";
+      msgEl.innerText = "Verificando código...";
+
+      try {
+        const snap = await get(child(ref(db), `solicitacoes_verificado/${codigo}`));
+        if (!snap.exists()) {
+          msgEl.style.color = "red";
+          msgEl.innerText = "Código inválido ou não aprovado pelo admin.";
+          return;
         }
 
-        // Função de salvar com validação estrita de nome duplicado
-        async function salvarPerfilCompleto() {
-            const user = firebase.auth().currentUser;
-            if (!user) {
-                alert("Erro: Você precisa estar logado para salvar!");
-                return;
-            }
-
-            const nomeDigitado = document.getElementById('inputNome').value.trim();
-            const temaEscolhido = document.getElementById('selectTema').value;
-
-            if (!nomeDigitado) {
-                alert("O nome de usuário não pode ficar vazio!");
-                return;
-            }
-
-            // Padroniza para minúsculo para evitar que criem "User" e "user" como se fossem diferentes
-            const usernameLimpo = nomeDigitado.toLowerCase();
-
-            try {
-                // 1. VERIFICAÇÃO DE NOME DUPLICADO NO FIRESTORE
-                const usuariosRef = db.collection('users');
-                const consulta = await usuariosRef.where('username', '==', usernameLimpo).get();
-
-                let nomePertenceOutro = false;
-                consulta.forEach(doc => {
-                    // Se o documento encontrado não for o ID do próprio usuário logado, o nome já existe
-                    if (doc.id !== user.uid) {
-                        nomePertenceOutro = true;
-                    }
-                });
-
-                if (nomePertenceOutro) {
-                    alert("❌ Erro: Esse nome de usuário já está em uso por outra pessoa. Escolha outro!");
-                    return; // Para o código aqui e não deixa salvar
-                }
-
-                // 2. SALVANDO NO BANCO DE DADOS SE TIVER LIVRE
-                await db.collection('users').doc(user.uid).set({
-                    username: usernameLimpo,
-                    nomeExibicao: nomeDigitado, // Mantém as letras maiúsculas/minúsculas originais que ele digitou
-                    temaPerfil: temaEscolhido
-                }, { merge: true });
-
-                alert("✅ Perfil e tema atualizados com sucesso!");
-
-            } catch (error) {
-                console.error("Erro ao salvar dados:", error);
-                alert("Ocorreu um erro ao salvar. Verifique o console.");
-            }
+        const dados = snap.val();
+        if (dados.usuario !== usuarioAtual) {
+          msgEl.style.color = "red";
+          msgEl.innerText = "Este código pertence a outro usuário!";
+          return;
         }
-    </script>
+
+        if (Date.now() > dados.expiraEm) {
+          msgEl.style.color = "red";
+          msgEl.innerText = "Este código/selo já expirou!";
+          return;
+        }
+
+        const cincoDiasMs = 5 * 24 * 60 * 60 * 1000;
+        const expiraEm = Date.now() + cincoDiasMs;
+
+        await update(ref(db, `usuarios/${usuarioAtual}`), {
+          verificado: true,
+          verificadoExpira: expiraEm
+        });
+
+        msgEl.style.color = "green";
+        msgEl.innerText = "Selo verificado resgatado com sucesso por 5 dias!";
+        document.getElementById('codigoResgateInput').value = '';
+      } catch (err) {
+        msgEl.style.color = "red";
+        msgEl.innerText = "Erro ao resgatar: " + err.message;
+      }
+    };
+
+    // --- FUNÇÕES DE POSTAGEM E FEED ---
+    window.triggerMidiaPostUpload = function() {
+      document.getElementById('postFileInput').click();
+    };
+
+    window.carregarPreviaMidiaPost = function(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      arquivoSelecionado = file;
+      const reader = new FileReader();
+
+      const containerPrevia = document.getElementById('postMediaPreviewContainer');
+      const imgPreview = document.getElementById('postImagePreview');
+      const videoPreview = document.getElementById('postVideoPreview');
+
+      imgPreview.classList.add('hidden');
+      videoPreview.classList.add('hidden');
+
+      if (file.type.startsWith('image/')) {
+        tipoMidiaPost = 'image';
+        reader.onload = function(e) {
+          imgPreview.src = e.target.result;
+          imgPreview.classList.remove('hidden');
+          containerPrevia.classList.remove('hidden');
+        };
+        reader.readAsDataURL(file);
+      } else if (file.type.startsWith('video/')) {
+        tipoMidiaPost = 'video';
+        reader.onload = function(e) {
+          videoPreview.src = e.target.result;
+          videoPreview.classList.remove('hidden');
+          containerPrevia.classList.remove('hidden');
+        };
+        reader.readAsDataURL(file);
+      }
+    };
+
+    window.removerMidiaPost = function() {
+      arquivoSelecionado = null;
+      tipoMidiaPost = null;
+      document.getElementById('postFileInput').value = '';
+      document.getElementById('postMediaPreviewContainer').classList.add('hidden');
+      document.getElementById('postImagePreview').src = '';
+      document.getElementById('postVideoPreview').src = '';
+    };
+
+    window.publicarPost = async function() {
+      const conteudo = document.getElementById('tweetContent').value.trim();
+      const btnPub = document.getElementById('btnPublicar');
+
+      if (!conteudo && !arquivoSelecionado) {
+        alert("Escreva alguma coisa ou adicione uma imagem/vídeo para publicar!");
+        return;
+      }
+
+      btnPub.disabled = true;
+      btnPub.innerText = "Publicando...";
+
+      let urlMidiaFinal = null;
+
+      try {
+        if (arquivoSelecionado) {
+          const formData = new FormData();
+          formData.append("file", arquivoSelecionado);
+          formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
+
+          const tipoRecurso = tipoMidiaPost === 'video' ? 'video' : 'image';
+          const respostaCloud = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/${tipoRecurso}/upload`, {
+            method: 'POST',
+            body: formData
+          });
+
+          const dadosCloud = await respostaCloud.json();
+          if (dadosCloud.secure_url) {
+            urlMidiaFinal = dadosCloud.secure_url;
+          } else {
+            throw new Error("Falha ao enviar mídia para o servidor.");
+          }
+        }
+
+        const novoPost = {
+          autor: usuarioAtual,
+          conteudo: conteudo,
+          tipoMidia: tipoMidiaPost,
+          urlMidia: urlMidiaFinal,
+          timestamp: Date.now(),
+          likes: {},
+          comentarios: {}
+        };
+
+        await push(ref(db, 'posts'), novoPost);
+
+        document.getElementById('tweetContent').value = '';
+        removerMidiaPost();
+        btnPub.disabled = false;
+        btnPub.innerText = "Publicar no Rock Chat";
+      } catch (err) {
+        alert("Erro ao publicar: " + err.message);
+        btnPub.disabled = false;
+        btnPub.innerText = "Publicar no Rock Chat";
+      }
+    };
+
+    function carregarPostsGerais() {
+      const postsRef = ref(db, 'posts');
+      onValue(postsRef, (snap) => {
+        todosPosts = snap.val() || {};
+        if (modoAtual === 'feed') {
+          renderizarFeed(todosPosts, 'feedContainer', false);
+        } else if (modoAtual === 'foryou') {
+          renderizarFeed(todosPosts, 'foryouContainer', true);
+        } else if (modoAtual === 'profile' && perfilAberto) {
+          renderizarFeedPerfil(todosPosts, perfilAberto);
+        }
+      });
+    }
+
+    function renderizarFeed(postsObj, containerId, apenasForyou) {
+      const container = document.getElementById(containerId);
+      container.innerHTML = '';
+
+      const keys = Object.keys(postsObj);
+      if (keys.length === 0) {
+        container.innerHTML = '<div style="font-size: 12px; color: #777; text-align: center; padding: 20px;">Nenhuma postagem no momento.</div>';
+        return;
+      }
+
+      let postsArray = keys.map(k => ({ id: k, ...postsObj[k] }));
+
+      if (apenasForyou) {
+        postsArray = postsArray.filter(p => {
+          const autorData = todosUsuarios[p.autor] || {};
+          const numLikes = p.likes ? Object.keys(p.likes).length : 0;
+          return autorData.verificado || numLikes >= 1;
+        });
+
+        if (postsArray.length === 0) {
+          container.innerHTML = '<div style="font-size: 12px; color: #777; text-align: center; padding: 20px;">Nenhum post em destaque no momento para o For You.</div>';
+          return;
+        }
+      }
+
+      postsArray.sort((a, b) => b.timestamp - a.timestamp);
+
+      postsArray.forEach(post => {
+        const autorData = todosUsuarios[post.autor] || {};
+        const ehVerificado = autorData.verificado === true;
+        const fotoPerfil = autorData.foto || 'https://via.placeholder.com/36/ccc/666?text=Foto';
+
+        const card = document.createElement('div');
+        card.className = ehVerificado ? 'post-box post-verified' : 'post-box';
+
+        let seloBadge = ehVerificado ? ' <span class="badge-verified" title="Verificado">✔</span> <span class="sparkle-icon">✨</span>' : '';
+        let foryouBadgeHtml = (apenasForyou || ehVerificado) ? '<div class="foryou-badge">✨ Destaque For You</div>' : '';
+
+        let midiaHtml = '';
+        if (post.urlMidia) {
+          if (post.tipoMidia === 'video') {
+            midiaHtml = `<video class="post-video-big" controls preload="metadata" playsinline src="${post.urlMidia}"></video>`;
+          } else {
+            midiaHtml = `<img class="post-image-big" src="${post.urlMidia}" loading="lazy">`;
+          }
+        }
+
+        const likesCount = post.likes ? Object.keys(post.likes).length : 0;
+        const jaCurtiu = post.likes && post.likes[usuarioAtual];
+        const corLike = jaCurtiu ? 'color: #ff007f; font-weight: bold;' : '';
+
+        const ehDonoPost = post.autor === usuarioAtual || usuarioAtual === ADMIN_USER;
+        const botaoDeletarHtml = ehDonoPost ? `<button class="btn-delete" style="font-size: 10px; padding: 2px 6px;" onclick="abrirModalExclusao('${post.id}')">Excluir</button>` : '';
+
+        const dataStr = new Date(post.timestamp).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' });
+
+        card.innerHTML = `
+          ${foryouBadgeHtml}
+          <div class="post-header">
+            <img class="avatar-mini ${ehVerificado ? 'avatar-verified' : ''}" src="${fotoPerfil}" onclick="abrirPerfil('${post.autor}')">
+            <div style="flex: 1;">
+              <strong style="font-size: 13px; cursor: pointer;" onclick="abrirPerfil('${post.autor}')">@${post.autor}</strong>${seloBadge}
+              <div style="font-size: 10px; color: #666;">${dataStr}</div>
+            </div>
+            ${botaoDeletarHtml}
+          </div>
+          <div class="post-content">${post.conteudo || ''}</div>
+          ${midiaHtml}
+          <div class="post-footer">
+            <button style="font-size: 11px; padding: 3px 8px; ${corLike}" onclick="toggleLikePost('${post.id}')">❤️ Curtir (${likesCount})</button>
+            <button style="font-size: 11px; padding: 3px 8px;" onclick="toggleSecaoComentarios('${post.id}')">💬 Comentar</button>
+          </div>
+          <div id="commentsSection_${post.id}" class="comments-section hidden">
+            <div id="commentsList_${post.id}"></div>
+            <div style="display: flex; gap: 5px; margin-top: 6px;">
+              <input type="text" id="commentInput_${post.id}" placeholder="Escreva um comentário..." style="flex: 1; font-size: 12px; padding: 4px;">
+              <button style="font-size: 11px; padding: 4px 8px;" onclick="enviarComentario('${post.id}')">Enviar</button>
+            </div>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    window.toggleLikePost = async function(postId) {
+      const postRef = ref(db, `posts/${postId}/likes/${usuarioAtual}`);
+      const snap = await get(postRef);
+      if (snap.exists()) {
+        await remove(postRef);
+      } else {
+        await set(postRef, true);
+      }
+    };
+
+    window.abrirModalExclusao = function(postId) {
+      postParaDeletar = postId;
+      document.getElementById('confirmModal').classList.remove('hidden');
+    };
+
+    window.fecharModalExclusao = function() {
+      postParaDeletar = null;
+      document.getElementById('confirmModal').classList.add('hidden');
+    };
+
+    window.confirmarDeletarPost = async function() {
+      if (!postParaDeletar) return;
+      try {
+        await remove(ref(db, `posts/${postParaDeletar}`));
+        fecharModalExclusao();
+      } catch (err) {
+        alert("Erro ao excluir: " + err.message);
+      }
+    };
+
+    window.toggleSecaoComentarios = function(postId) {
+      const sec = document.getElementById(`commentsSection_${postId}`);
+      if (sec.classList.contains('hidden')) {
+        sec.classList.remove('hidden');
+        renderizarComentarios(postId);
+      } else {
+        sec.classList.add('hidden');
+      }
+    };
+
+    function renderizarComentarios(postId) {
+      const listContainer = document.getElementById(`commentsList_${postId}`);
+      const post = todosPosts[postId] || {};
+      const comentarios = post.comentarios || {};
+
+      listContainer.innerHTML = '';
+      const keys = Object.keys(comentarios);
+
+      if (keys.length === 0) {
+        listContainer.innerHTML = '<div style="font-size: 11px; color: #777; margin-bottom: 5px;">Nenhum comentário ainda.</div>';
+        return;
+      }
+
+      keys.forEach(cKey => {
+        const com = comentarios[cKey];
+        const autorData = todosUsuarios[com.autor] || {};
+        const verifBadge = autorData.verificado ? ' ✔' : '';
+
+        const item = document.createElement('div');
+        item.className = 'comment-item';
+        item.innerHTML = `
+          <strong style="color: #333; cursor: pointer;" onclick="abrirPerfil('${com.autor}')">@${com.autor}${verifBadge}:</strong> 
+          <span>${com.texto}</span>
+        `;
+        listContainer.appendChild(item);
+      });
+    }
+
+    window.enviarComentario = async function(postId) {
+      const input = document.getElementById(`commentInput_${postId}`);
+      const texto = input.value.trim();
+      if (!texto) return;
+
+      try {
+        await push(ref(db, `posts/${postId}/comentarios`), {
+          autor: usuarioAtual,
+          texto: texto,
+          timestamp: Date.now()
+        });
+        input.value = '';
+        renderizarComentarios(postId);
+      } catch (err) {
+        alert("Erro ao comentar: " + err.message);
+      }
+    };
+
+    window.abrirPerfil = function(username) {
+      perfilAberto = username;
+      esconderTodasAsAbas();
+      document.getElementById('profileView').classList.remove('hidden');
+      carregarPerfil(username);
+    };
+
+    window.abrirMeuPerfil = function() {
+      modoAtual = 'profile';
+      document.querySelectorAll('#bottomNav button').forEach(b => b.classList.remove('active'));
+      document.getElementById('navBtnProfile').classList.add('active');
+      abrirPerfil(usuarioAtual);
+    };
+
+    function carregarPerfil(username) {
+      const userData = todosUsuarios[username] || {};
+      const ehMeuPerfil = username === usuarioAtual;
+
+      const cardBox = document.getElementById('profileCardBox');
+      const ehVerificado = userData.verificado === true;
+
+      if (ehVerificado) {
+        cardBox.className = 'profile-card profile-verified';
+      } else {
+        cardBox.className = 'profile-card';
+      }
+
+      let seloBadge = ehVerificado ? ' <span class="badge-verified" title="Verificado">✔</span> <span class="sparkle-icon">✨</span>' : '';
+      document.getElementById('profName').innerHTML = '@' + username + seloBadge;
+      document.getElementById('profAvatar').src = userData.foto || 'https://via.placeholder.com/70/ccc/666?text=Foto';
+
+      const avatarText = document.getElementById('profAvatarText');
+      const btnEditarNome = document.getElementById('btnEditarNome');
+      const followBtn = document.getElementById('profFollowBtn');
+      const msgBtn = document.getElementById('profMsgBtn');
+      const callBtn = document.getElementById('profCallBtn');
+
+      if (ehMeuPerfil) {
+        avatarText.classList.remove('hidden');
+        btnEditarNome.classList.remove('hidden');
+        followBtn.classList.add('hidden');
+        msgBtn.classList.add('hidden');
+        callBtn.classList.add('hidden');
+      } else {
+        avatarText.classList.add('hidden');
+        btnEditarNome.classList.add('hidden');
+        followBtn.classList.remove('hidden');
+        msgBtn.classList.remove('hidden');
+        callBtn.classList.remove('hidden');
+
+        const seguindoMap = userData.seguidores || {};
+        const jaSegue = seguindoMap[usuarioAtual];
+        followBtn.innerText = jaSegue ? 'Deixar de Seguir' : 'Seguir';
+        followBtn.style.background = jaSegue ? '#e0e0e0' : '#0095f6';
+        followBtn.style.color = jaSegue ? '#000' : '#fff';
+        followBtn.style.border = '1px solid #707070';
+      }
+
+      const seguidoresCount = userData.seguidores ? Object.keys(userData.seguidores).length : 0;
+      const seguindoCount = userData.seguindo ? Object.keys(userData.seguindo).length : 0;
+      document.getElementById('profSeguidores').innerText = seguidoresCount;
+      document.getElementById('profSeguindo').innerText = seguindoCount;
+
+      renderizarFeedPerfil(todosPosts, username);
+    }
+
+    window.triggerFotoUpload = function() {
+      if (perfilAberto !== usuarioAtual) return;
+      document.getElementById('fileInput').click();
+    };
+
+    window.uploadFotoPerfil = async function(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      try {
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
+
+        const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`, {
+          method: 'POST',
+          body: formData
+        });
+        const data = await res.json();
+
+        if (data.secure_url) {
+          await update(ref(db, `usuarios/${usuarioAtual}`), { foto: data.secure_url });
+          alert("Foto de perfil atualizada com sucesso!");
+        } else {
+          throw new Error("Falha no upload da foto.");
+        }
+      } catch (err) {
+        alert("Erro ao alterar foto: " + err.message);
+      }
+    };
+
+    window.toggleSeguir = async function() {
+      if (!perfilAberto || perfilAberto === usuarioAtual) return;
+
+      const seguidorRef = ref(db, `usuarios/${perfilAberto}/seguidores/${usuarioAtual}`);
+      const meuSeguindoRef = ref(db, `usuarios/${usuarioAtual}/seguindo/${perfilAberto}`);
+
+      const snap = await get(seguidorRef);
+      if (snap.exists()) {
+        await remove(seguidorRef);
+        await remove(meuSeguindoRef);
+      } else {
+        await set(seguidorRef, true);
+        await set(meuSeguindoRef, true);
+      }
+    };
+
+    function renderizarFeedPerfil(postsObj, username) {
+      const container = document.getElementById('profileFeedContainer');
+      container.innerHTML = '';
+
+      const keys = Object.keys(postsObj);
+      let postsArray = keys.map(k => ({ id: k, ...postsObj[k] })).filter(p => p.autor === username);
+
+      if (postsArray.length === 0) {
+        container.innerHTML = '<div style="font-size: 12px; color: #777; text-align: center; padding: 15px;">Este usuário ainda não publicou nada.</div>';
+        return;
+      }
+
+      postsArray.sort((a, b) => b.timestamp - a.timestamp);
+
+      postsArray.forEach(post => {
+        const autorData = todosUsuarios[post.autor] || {};
+        const ehVerificado = autorData.verificado === true;
+        const fotoPerfil = autorData.foto || 'https://via.placeholder.com/36/ccc/666?text=Foto';
+
+        const card = document.createElement('div');
+        card.className = ehVerificado ? 'post-box post-verified' : 'post-box';
+
+        let seloBadge = ehVerificado ? ' <span class="badge-verified" title="Verificado">✔</span> <span class="sparkle-icon">✨</span>' : '';
+        let midiaHtml = '';
+        if (post.urlMidia) {
+          if (post.tipoMidia === 'video') {
+            midiaHtml = `<video class="post-video-big" controls preload="metadata" playsinline src="${post.urlMidia}"></video>`;
+          } else {
+            midiaHtml = `<img class="post-image-big" src="${post.urlMidia}" loading="lazy">`;
+          }
+        }
+
+        const likesCount = post.likes ? Object.keys(post.likes).length : 0;
+        const jaCurtiu = post.likes && post.likes[usuarioAtual];
+        const corLike = jaCurtiu ? 'color: #ff007f; font-weight: bold;' : '';
+        const ehDonoPost = post.autor === usuarioAtual || usuarioAtual === ADMIN_USER;
+        const botaoDeletarHtml = ehDonoPost ? `<button class="btn-delete" style="font-size: 10px; padding: 2px 6px;" onclick="abrirModalExclusao('${post.id}')">Excluir</button>` : '';
+
+        const dataStr = new Date(post.timestamp).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' });
+
+        card.innerHTML = `
+          <div class="post-header">
+            <img class="avatar-mini ${ehVerificado ? 'avatar-verified' : ''}" src="${fotoPerfil}">
+            <div style="flex: 1;">
+              <strong style="font-size: 13px;">@${post.autor}</strong>${seloBadge}
+              <div style="font-size: 10px; color: #666;">${dataStr}</div>
+            </div>
+            ${botaoDeletarHtml}
+          </div>
+          <div class="post-content">${post.conteudo || ''}</div>
+          ${midiaHtml}
+          <div class="post-footer">
+            <button style="font-size: 11px; padding: 3px 8px; ${corLike}" onclick="toggleLikePost('${post.id}')">❤️ Curtir (${likesCount})</button>
+            <button style="font-size: 11px; padding: 3px 8px;" onclick="toggleSecaoComentarios('${post.id}')">💬 Comentar</button>
+          </div>
+          <div id="commentsSection_${post.id}" class="comments-section hidden">
+            <div id="commentsList_${post.id}"></div>
+            <div style="display: flex; gap: 5px; margin-top: 6px;">
+              <input type="text" id="commentInput_${post.id}" placeholder="Escreva um comentário..." style="flex: 1; font-size: 12px; padding: 4px;">
+              <button style="font-size: 11px; padding: 4px 8px;" onclick="enviarComentario('${post.id}')">Enviar</button>
+            </div>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    window.mostrarBusca = function() {
+      modoAtual = 'search';
+      esconderTodasAsAbas();
+      document.getElementById('searchView').classList.remove('hidden');
+      document.getElementById('searchInput').value = '';
+      document.getElementById('searchResults').innerHTML = '';
+      document.getElementById('searchInput').focus();
+    };
+
+    window.buscarPerfis = function() {
+      const termo = document.getElementById('searchInput').value.trim().toLowerCase();
+      const container = document.getElementById('searchResults');
+      container.innerHTML = '';
+
+      if (!termo) return;
+
+      let encontrados = 0;
+      Object.keys(todosUsuarios).forEach(username => {
+        if (username.includes(termo)) {
+          encontrados++;
+          const userData = todosUsuarios[username] || {};
+          const ehVerificado = userData.verificado === true;
+          const foto = userData.foto || 'https://via.placeholder.com/36/ccc/666?text=Foto';
+          const verifBadge = ehVerificado ? ' <span class="badge-verified">✔</span>' : '';
+
+          const item = document.createElement('div');
+          item.style.cssText = "display: flex; align-items: center; justify-content: space-between; background: #fff; border: 1px solid #ccc; padding: 8px; margin-bottom: 5px;";
+          item.innerHTML = `
+            <div style="display: flex; align-items: center; gap: 8px; cursor: pointer;" onclick="abrirPerfil('${username}')">
+              <img class="avatar-mini" src="${foto}">
+              <strong style="font-size: 13px;">@${username}${verifBadge}</strong>
+            </div>
+            <button style="font-size: 11px; padding: 4px 10px;" onclick="abrirPerfil('${username}')">Ver Perfil</button>
+          `;
+          container.appendChild(item);
+        }
+      });
+
+      if (encontrados === 0) {
+        container.innerHTML = '<div style="font-size: 12px; color: #777;">Nenhum usuário encontrado.</div>';
+      }
+    };
+  </script>
 </body>
 </html>
