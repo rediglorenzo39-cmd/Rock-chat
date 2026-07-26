@@ -111,9 +111,6 @@
 </head>
 <body>
 
-  <!-- ÁUDIO DE RINGTONE PARA CHAMADA -->
-  <audio id="ringtoneAudio" src="https://assets.mixkit.co/active_storage/sfx/2865/2865-preview.mp3" loop></audio>
-
   <div class="container">
     <!-- BARRA DE NOTIFICAÇÃO FLUTUANTE DE MENSAGEM -->
     <div id="notificacaoFlutuante" class="hidden" onclick="abrirChatDiretoDaNotificacao()">
@@ -346,6 +343,8 @@
     let usuarioChamadoAtualmente = null;
     let temChamadaAtivaOuChamando = false;
     let intervaloVibracao = null;
+    let audioCtx = null;
+    let intervaloToqueBip = null;
 
     window.addEventListener('DOMContentLoaded', () => {
       solicitarPermissaoNotificacao();
@@ -369,22 +368,68 @@
       }
     }
 
+    // TOCAR SOM DE CHAMADA GERADO POR CÓDIGO (Bypass de bloqueios do navegador)
+    function iniciarToqueChamadaSonoro() {
+      if (!audioCtx) {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        audioCtx = new AudioContext();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+
+      if (intervaloToqueBip) return;
+
+      const tocarBip = () => {
+        if (!audioCtx) return;
+        try {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(440, audioCtx.currentTime); // Tom padrão de chamada
+          
+          gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.4);
+
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          
+          osc.start();
+          osc.stop(audioCtx.currentTime + 0.4);
+        } catch(e) {}
+      };
+
+      tocarBip();
+      intervaloToqueBip = setInterval(tocarBip, 1200);
+    }
+
+    function pararToqueChamadaSonoro() {
+      if (intervaloToqueBip) {
+        clearInterval(intervaloToqueBip);
+        intervaloToqueBip = null;
+      }
+    }
+
     function iniciarVibracaoCelular() {
       if ("vibrate" in navigator) {
-        navigator.vibrate([500, 500]);
-        intervaloVibracao = setInterval(() => {
+        try {
           navigator.vibrate([500, 500]);
-        }, 1000);
+          intervaloVibracao = setInterval(() => {
+            navigator.vibrate([500, 500]);
+          }, 1000);
+        } catch(e) {}
       }
     }
 
     function pararVibracaoCelular() {
       if ("vibrate" in navigator) {
-        if (intervaloVibracao) {
-          clearInterval(intervaloVibracao);
-          intervaloVibracao = null;
-        }
-        navigator.vibrate(0);
+        try {
+          if (intervaloVibracao) {
+            clearInterval(intervaloVibracao);
+            intervaloVibracao = null;
+          }
+          navigator.vibrate(0);
+        } catch(e) {}
       }
     }
 
@@ -563,7 +608,6 @@
 
     function escutarLigacoesRecebidas() {
       const ligacoesRef = ref(db, 'ligacoes');
-      const ringtone = document.getElementById('ringtoneAudio');
 
       onValue(ligacoesRef, (snap) => {
         const dados = snap.val() || {};
@@ -596,37 +640,21 @@
           document.getElementById('textoChamadaEntrada').innerHTML = textoNotif;
           notifEl.classList.remove('hidden');
 
-          if ("Notification" in window) {
-            if (Notification.permission === "granted") {
-              const notificacaoSistema = new Notification("Uma pessoa está te ligando no Rock Chat", {
-                body: `${ligacaoEntranteObj.remetente} está te chamando para uma ligação! Toque para conectar.`,
+          if ("Notification" in window && Notification.permission === "granted") {
+            try {
+              new Notification("Uma pessoa está te ligando no Rock Chat", {
+                body: `${ligacaoEntranteObj.remetente} está te chamando!`,
                 icon: remetenteData.foto || "https://via.placeholder.com/128"
               });
-
-              notificacaoSistema.onclick = function() {
-                window.focus();
-                notificacaoSistema.close();
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              };
-            } else if (Notification.permission !== "denied") {
-              Notification.requestPermission().then(permission => {
-                if (permission === "granted") {
-                  new Notification("Uma pessoa está te ligando no Rock Chat", {
-                    body: `${ligacaoEntranteObj.remetente} está te chamando para uma ligação! Toque para conectar.`,
-                    icon: remetenteData.foto || "https://via.placeholder.com/128"
-                  });
-                }
-              });
-            }
+            } catch(e) {}
           }
 
-          ringtone.play().catch(e => console.log("Áudio bloqueado", e));
+          iniciarToqueChamadaSonoro();
           iniciarVibracaoCelular();
 
         } else {
           notifEl.classList.add('hidden');
-          ringtone.pause();
-          ringtone.currentTime = 0;
+          pararToqueChamadaSonoro();
           pararVibracaoCelular();
         }
 
@@ -634,8 +662,7 @@
           const statusAtual = dados[ligacaoEmAndamentoKey].status;
           
           if (statusAtual === 'atendida' || statusAtual === 'recusada' || statusAtual === 'encerrada') {
-            ringtone.pause();
-            ringtone.currentTime = 0;
+            pararToqueChamadaSonoro();
             pararVibracaoCelular();
           }
 
@@ -647,8 +674,7 @@
           } else {
             temChamadaAtivaOuChamando = false;
             ligacaoEmAndamentoKey = null;
-            ringtone.pause();
-            ringtone.currentTime = 0;
+            pararToqueChamadaSonoro();
             pararVibracaoCelular();
           }
           atualizarBotaoRetornarChamadaNav();
@@ -656,22 +682,26 @@
           if (statusAtual === 'recusada') {
             document.getElementById('callStatusText').innerText = "Ligação recusada";
             pararVibracaoCelular();
+            pararToqueChamadaSonoro();
             document.getElementById('callLiveMessagesContainer').innerHTML = '<div style="color: #d32f2f; font-weight: bold;">❌ A ligação foi recusada.</div>';
             document.getElementById('callWritingArea').classList.add('hidden');
             setTimeout(() => { if (modoAtual === 'call') irParaFeed(); }, 3000);
           } else if (statusAtual === 'atendida') {
             document.getElementById('callStatusText').innerText = "Ligação Ativa 📞";
             pararVibracaoCelular();
+            pararToqueChamadaSonoro();
             document.getElementById('callWritingArea').classList.remove('hidden');
           } else if (statusAtual === 'encerrada') {
             document.getElementById('callStatusText').innerText = "Ligação encerrada";
             pararVibracaoCelular();
+            pararToqueChamadaSonoro();
             document.getElementById('callLiveMessagesContainer').innerHTML = '<div style="color: #d32f2f; font-weight: bold;">🔴 A ligação foi encerrada.</div>';
             document.getElementById('callWritingArea').classList.add('hidden');
             setTimeout(() => { if (modoAtual === 'call') irParaFeed(); }, 2000);
           } else if (statusAtual === 'erro_rede') {
             document.getElementById('callStatusText').innerText = "Erro de rede / Desconectado";
             pararVibracaoCelular();
+            pararToqueChamadaSonoro();
             document.getElementById('callLiveMessagesContainer').innerHTML = '<div style="color: #d32f2f; font-weight: bold;">⚠️ Erro de rede.</div>';
             document.getElementById('callWritingArea').classList.add('hidden');
             setTimeout(() => { if (modoAtual === 'call') irParaFeed(); }, 3000);
@@ -680,8 +710,7 @@
           if (temChamadaAtivaOuChamando && ligacaoEmAndamentoKey) {
             temChamadaAtivaOuChamando = false;
             ligacaoEmAndamentoKey = null;
-            ringtone.pause();
-            ringtone.currentTime = 0;
+            pararToqueChamadaSonoro();
             pararVibracaoCelular();
             atualizarBotaoRetornarChamadaNav();
             if (modoAtual === 'call') {
@@ -734,8 +763,7 @@
     window.atenderChamadaEntrante = async function() {
       if (!chamadaAtualId) return;
       document.getElementById('notificacaoChamada').classList.add('hidden');
-      document.getElementById('ringtoneAudio').pause();
-      document.getElementById('ringtoneAudio').currentTime = 0;
+      pararToqueChamadaSonoro();
       pararVibracaoCelular();
       
       try {
@@ -769,8 +797,7 @@
     window.recusarChamadaEntrante = async function() {
       if (!chamadaAtualId) return;
       document.getElementById('notificacaoChamada').classList.add('hidden');
-      document.getElementById('ringtoneAudio').pause();
-      document.getElementById('ringtoneAudio').currentTime = 0;
+      pararToqueChamadaSonoro();
       pararVibracaoCelular();
       try {
         await update(ref(db, `ligacoes/${chamadaAtualId}`), { status: 'recusada' });
@@ -832,8 +859,7 @@
     };
 
     window.encerrarOuRecusarLigacao = async function() {
-      document.getElementById('ringtoneAudio').pause();
-      document.getElementById('ringtoneAudio').currentTime = 0;
+      pararToqueChamadaSonoro();
       pararVibracaoCelular();
 
       if (ligacaoEmAndamentoKey) {
