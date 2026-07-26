@@ -787,7 +787,7 @@
           nome: nomeGrupo,
           criador: usuarioAtual,
           membros: membrosSelecionadosParaGrupo,
-          membrosCanAdd: true, // Configuração padrão: todos podem adicionar
+          membrosCanAdd: true, 
           timestamp: Date.now()
         };
 
@@ -804,14 +804,12 @@
       onValue(ref(db, 'grupos'), (snap) => {
         todosGrupos = snap.val() || {};
         
-        // Se o grupo ativo foi deletado, tira o usuário de lá
         if (grupoAtivoId && !todosGrupos[grupoAtivoId]) {
           alert("O dono deletou este grupo permanentemente.");
           voltarParaListaGrupos();
           return;
         }
 
-        // Se o usuário foi removido do grupo
         if (grupoAtivoId && todosGrupos[grupoAtivoId]) {
           const g = todosGrupos[grupoAtivoId];
           if (!g.membros || !g.membros.includes(usuarioAtual)) {
@@ -894,7 +892,6 @@
         dashboard.classList.add('hidden');
       }
 
-      // Verifica se os membros podem adicionar pessoas
       if (ehDono || g.membersCanAdd === true) {
         btnAddMembro.classList.remove('hidden');
       } else {
@@ -907,7 +904,6 @@
       abrirAbaGrupos();
     };
 
-    // --- FUNÇÕES DE ADICIONAR MEMBRO E CONTROLE DO DONO ---
     window.abrirModalAdicionarMembroGrupo = function() {
       document.getElementById('pesquisaMembroExistenteInput').value = '';
       document.getElementById('resultadosPesquisaMembroExistente').innerHTML = '<div style="font-size: 11px; color: #777;">Digite para buscar...</div>';
@@ -966,7 +962,6 @@
         try {
           await update(ref(db, `grupos/${grupoAtivoId}`), { membros: novosMembros });
           
-          // Mensagem de sistema informando quem adicionou quem
           await push(ref(db, `mensagens_grupos/${grupoAtivoId}`), {
             remetente: "Sistema",
             texto: `@${usuarioAtual} adicionou @${username} ao grupo.`,
@@ -981,7 +976,6 @@
       }
     };
 
-    // Alternar permissão de membros adicionarem (Exclusivo do Dono)
     window.alternarPermissaoMembrosAdd = async function(permitir) {
       if (!grupoAtivoId) return;
       const g = todosGrupos[grupoAtivoId];
@@ -995,7 +989,6 @@
       }
     };
 
-    // Deletar grupo para sempre (Exclusivo do Dono)
     window.donoDeletarGrupoParaSempre = async function() {
       if (!grupoAtivoId) return;
       const g = todosGrupos[grupoAtivoId];
@@ -1004,7 +997,6 @@
       if (!confirm("Tem certeza que deseja deletar este grupo permanentemente para todos os membros?")) return;
 
       try {
-        // Remove mensagens e o grupo do Firebase
         await remove(ref(db, `mensagens_grupos/${grupoAtivoId}`));
         await remove(ref(db, `grupos/${grupoAtivoId}`));
         alert("Grupo deletado para sempre.");
@@ -1014,7 +1006,6 @@
       }
     };
 
-    // --- SAIR DO GRUPO (Com notificação contendo o nome) ---
     window.sairDoGrupo = async function() {
       if (!grupoAtivoId) return;
       if (!confirm("Tem certeza que deseja sair deste grupo?")) return;
@@ -1028,7 +1019,6 @@
       try {
         await update(grupoRef, { membros: novosMembros });
 
-        // Notificação personalizada com o nome exato de quem saiu
         await push(ref(db, `mensagens_grupos/${grupoAtivoId}`), {
           remetente: "Sistema",
           texto: `${usuarioAtual} saiu do grupo.`,
@@ -2112,4 +2102,3 @@
   </script>
 </body>
 </html>
-
