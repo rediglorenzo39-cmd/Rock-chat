@@ -347,7 +347,6 @@
     let temChamadaAtivaOuChamando = false;
     let intervaloVibracao = null;
 
-    // QUANDO A PÁGINA CARREGA, VERIFICA SE JÁ HÁ UMA CONTA SALVA NO LOCALSTORAGE (MANTÉM CONECTADO)
     window.addEventListener('DOMContentLoaded', () => {
       solicitarPermissaoNotificacao();
       const usuarioSalvo = localStorage.getItem('rockchat_usuario_logado');
@@ -597,7 +596,6 @@
           document.getElementById('textoChamadaEntrada').innerHTML = textoNotif;
           notifEl.classList.remove('hidden');
 
-          // DISPARA A NOTIFICAÇÃO NATIVA DO CHROME/GOOGLE
           if ("Notification" in window) {
             if (Notification.permission === "granted") {
               const notificacaoSistema = new Notification("Uma pessoa está te ligando no Rock Chat", {
