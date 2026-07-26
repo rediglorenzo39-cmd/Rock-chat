@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Rock Chat - Sistema Completo com Chamada e Notificação</title>
+  <title>Rock Chat - Sistema Completo com Grupos e Chamadas</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: Arial, sans-serif; }
     body { background-color: #f0f0f0; color: #000; display: flex; justify-content: center; padding: 10px; }
@@ -15,6 +15,7 @@
     .btn-verified-store { background: linear-gradient(to bottom, #fff8e1, #ffecb3) !important; border-color: #f57c00 !important; color: #e65100 !important; }
     .btn-msg { background: linear-gradient(to bottom, #e8f5e9, #c8e6c9) !important; border-color: #2e7d32 !important; color: #1b5e20 !important; }
     .btn-call { background: linear-gradient(to bottom, #e0f7fa, #b2ebf2) !important; border-color: #00838f !important; color: #006064 !important; }
+    .btn-group { background: linear-gradient(to bottom, #f3e5f5, #e1bee7) !important; border-color: #8e24aa !important; color: #4a148c !important; }
     .btn-back-call { background: linear-gradient(to bottom, #b2ebf2, #80deea) !important; border-color: #00838f !important; color: #004d40 !important; animation: piscaBotaoCall 1s infinite alternate; }
     @keyframes piscaBotaoCall { from { opacity: 0.8; } to { opacity: 1; transform: scale(1.03); } }
 
@@ -36,7 +37,7 @@
     .modal-box { background: #fff; border: 2px solid #333; padding: 20px; width: 90%; max-width: 380px; text-align: center; }
     .hidden { display: none !important; }
 
-    /* NOTIFICAÇÃO ESTILO TIKTOK PARA MENSAGENS */
+    /* NOTIFICAÇÃO FLUTUANTE DE MENSAGEM */
     #notificacaoFlutuante {
       position: absolute;
       top: 15px;
@@ -57,7 +58,7 @@
       to { transform: translateY(0); opacity: 1; }
     }
 
-    /* NOTIFICAÇÃO DE CHAMADA NA TELA (COM ATENDER E RECUSAR) */
+    /* NOTIFICAÇÃO DE CHAMADA NA TELA */
     #notificacaoChamada {
       position: fixed;
       top: 20px;
@@ -117,7 +118,7 @@
       <span id="textoNotificacaoFlutuante">Nova mensagem!</span>
     </div>
 
-    <!-- NOTIFICAÇÃO DE CHAMADA NA TELA (COM BOTÃO DE ATENDER / RECUSAR) -->
+    <!-- NOTIFICAÇÃO DE CHAMADA NA TELA -->
     <div id="notificacaoChamada" class="hidden">
       <h3 id="tituloChamadaEntrada" style="color: #00e5ff; margin-bottom: 8px;">📞 Chamada Recebida!</h3>
       <p id="textoChamadaEntrada" style="font-size: 13px; margin-bottom: 12px;"></p>
@@ -153,6 +154,7 @@
         <button class="btn-foryou" onclick="irParaForYou()">✨ For You</button>
         <button onclick="abrirMeuPerfil()">Meu Perfil</button>
         <button onclick="mostrarBusca()">Buscar Pessoas</button>
+        <button class="btn-group" onclick="abrirAbaGrupos()">👥 Grupos</button>
         <button class="btn-verified-store" onclick="abrirLojaSelo()">⭐ Comprar Selo</button>
         <button id="btnAdminPanel" class="hidden" style="background: linear-gradient(to bottom, #e1bee7, #ce93d8); border-color: #8e24aa; color: #4a148c;" onclick="abrirPainelAdmin()">🛠️ Painel Admin</button>
         <button id="btnRetornarChamadaNav" class="hidden btn-back-call" onclick="retornarParaTelaDeChamada()">📞 Entrar na Chamada</button>
@@ -210,6 +212,31 @@
         <div id="profileFeedContainer"></div>
       </div>
 
+      <!-- TELA DE GRUPOS -->
+      <div id="groupsView" class="hidden" style="border: 1px solid #ccc; background: #f9f9f9; padding: 15px; margin-bottom: 15px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #8e24aa; padding-bottom: 8px; margin-bottom: 12px;">
+          <h3 style="color: #4a148c; font-size: 16px;">👥 Grupos do Rock Chat</h3>
+          <button class="btn-group" onclick="abrirModalCriarGrupo()">+ Criar Grupo</button>
+        </div>
+        <div id="listaMeusGruposContainer">
+          <div style="font-size: 12px; color: #777;">Carregando grupos...</div>
+        </div>
+      </div>
+
+      <!-- TELA DE CHAT DE GRUPO ESPECÍFICO -->
+      <div id="groupChatView" class="hidden" style="border: 1px solid #ccc; background: #fafafa; padding: 15px; margin-bottom: 15px;">
+        <div style="display: flex; align-items: center; gap: 10px; border-bottom: 2px solid #8e24aa; padding-bottom: 10px; margin-bottom: 15px;">
+          <button onclick="voltarParaListaGrupos()" style="font-size: 12px;">← Voltar</button>
+          <h3 id="groupChatNameTitle" style="font-size: 15px; color: #4a148c;">Nome do Grupo</h3>
+        </div>
+        <div id="groupChatMessagesContainer" style="height: 250px; overflow-y: auto; background: #fff; border: 1px solid #ddd; padding: 10px; margin-bottom: 10px; display: flex; flex-direction: column; gap: 8px;"></div>
+        <div>
+          <label style="font-size: 12px; font-weight: bold; display: block; margin-bottom: 4px;">Escrever no grupo:</label>
+          <textarea id="groupChatInputContent" style="width: 100%; height: 50px; margin-bottom: 6px;" placeholder="Digite sua mensagem para o grupo..."></textarea>
+          <button class="btn-group" style="width: 100%; padding: 8px; font-weight: bold;" onclick="enviarMensagemGrupo()">Enviar no Grupo</button>
+        </div>
+      </div>
+
       <!-- TELA DE CHAT PRIVADO -->
       <div id="chatView" class="hidden" style="border: 1px solid #ccc; background: #fafafa; padding: 15px; margin-bottom: 15px;">
         <div style="display: flex; align-items: center; gap: 10px; border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 15px;">
@@ -218,9 +245,7 @@
           <h3 id="chatUserName" style="font-size: 15px;">@usuario</h3>
           <button class="btn-call" style="margin-left: auto; font-size: 12px;" onclick="iniciarLigacaoDoChat()">📞 Ligar</button>
         </div>
-
         <div id="chatMessagesContainer" style="height: 250px; overflow-y: auto; background: #fff; border: 1px solid #ddd; padding: 10px; margin-bottom: 10px; display: flex; flex-direction: column; gap: 8px;"></div>
-
         <div>
           <label style="font-size: 12px; font-weight: bold; display: block; margin-bottom: 4px;">Escrever mensagem:</label>
           <textarea id="chatInputContent" style="width: 100%; height: 50px; margin-bottom: 6px;" placeholder="Digite sua mensagem..."></textarea>
@@ -290,6 +315,7 @@
     </div>
   </div>
 
+  <!-- MODAL DE EXCLUSÃO DE POST -->
   <div id="confirmModal" class="modal-overlay hidden">
     <div class="modal-box">
       <h4 style="margin-bottom: 10px;">⚠️ Confirmar Exclusão</h4>
@@ -297,6 +323,33 @@
       <div style="margin-top: 15px; display: flex; justify-content: center; gap: 10px;">
         <button class="btn-delete" onclick="confirmarDeletarPost()">Excluir para sempre</button>
         <button onclick="fecharModalExclusao()">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL DE CRIAÇÃO DE GRUPO -->
+  <div id="modalCriarGrupo" class="modal-overlay hidden">
+    <div class="modal-box" style="max-width: 420px; text-align: left;">
+      <h4 style="color: #4a148c; margin-bottom: 10px; text-align: center;">👥 Criar Novo Grupo</h4>
+      
+      <label style="font-size: 12px; font-weight: bold; display: block; margin-bottom: 3px;">Nome do grupo:</label>
+      <input type="text" id="nomeGrupoInput" placeholder="Ex: Galera do Rock..." style="width: 100%; margin-bottom: 12px;">
+
+      <label style="font-size: 12px; font-weight: bold; display: block; margin-bottom: 3px;">Adicione perfis de pessoas:</label>
+      <input type="text" id="pesquisaMembrosInput" placeholder="Digite uma letra ou nome para pesquisar..." oninput="filtrarPerfisParaGrupo()" style="width: 100%; margin-bottom: 8px;">
+
+      <div id="resultadosPesquisaMembros" style="max-height: 120px; overflow-y: auto; border: 1px solid #ddd; background: #fff; padding: 5px; margin-bottom: 12px;">
+        <div style="font-size: 11px; color: #777;">Digite algo para buscar pessoas...</div>
+      </div>
+
+      <label style="font-size: 12px; font-weight: bold; display: block; margin-bottom: 4px;">Pessoas selecionadas:</label>
+      <div id="listaMembrosSelecionadosContainer" style="min-height: 50px; max-height: 100px; overflow-y: auto; border: 1px solid #ccc; background: #fdfdfd; padding: 6px; margin-bottom: 15px; display: flex; flex-wrap: wrap; gap: 5px;">
+        <div style="font-size: 11px; color: #777;">Nenhuma pessoa adicionada ainda.</div>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 8px;">
+        <button class="btn-group" onclick="confirmarCriacaoGrupo()" style="font-weight: bold;">Confirmar e Criar</button>
+        <button onclick="fecharModalCriarGrupo()">Cancelar</button>
       </div>
     </div>
   </div>
@@ -326,15 +379,20 @@
     let usuarioAtual = null;
     let perfilAberto = null;
     let chatComUsuario = null; 
+    let grupoAtivoId = null;
     let modoAtual = 'feed'; 
     let todosUsuarios = {};
     let todosPosts = {};
+    let todosGrupos = {};
     let historicoPix = {};
     let solicitacoesAprovadas = {}; 
     let postParaDeletar = null;
     let tipoMidiaPost = null;
     let arquivoSelecionado = null;
     let ultimaMensagemNotificadaKey = null;
+
+    // VARIÁVEIS DE SISTEMA DE GRUPO (SELEÇÃO)
+    let membrosSelecionadosParaGrupo = [];
 
     // VARIÁVEIS DE SISTEMA DE LIGAÇÃO
     let chamadaAtualId = null;
@@ -349,7 +407,6 @@
     window.addEventListener('DOMContentLoaded', () => {
       solicitarPermissaoNotificacao();
       
-      // DESBLOQUEIO GLOBAL DE ÁUDIO NO CELULAR (Ao primeiro toque em qualquer lugar da tela)
       const desbloquearAudioCelular = () => {
         if (!audioCtx) {
           const AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -358,7 +415,6 @@
         if (audioCtx.state === 'suspended') {
           audioCtx.resume();
         }
-        // Toca um som mudo ultra rápido apenas para o navegador liberar o motor de áudio
         try {
           const osc = audioCtx.createOscillator();
           const gain = audioCtx.createGain();
@@ -395,7 +451,6 @@
       }
     }
 
-    // TOCAR SOM DE CHAMADA GERADO POR CÓDIGO COM FORÇAGEM DE ATIVAÇÃO
     function iniciarToqueChamadaSonoro() {
       if (!audioCtx) {
         const AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -416,7 +471,7 @@
           const osc = audioCtx.createOscillator();
           const gain = audioCtx.createGain();
           osc.type = 'sine';
-          osc.frequency.setValueAtTime(520, audioCtx.currentTime); // Frequência ajustada para tocar mais alto
+          osc.frequency.setValueAtTime(520, audioCtx.currentTime);
           
           gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
           gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.5);
@@ -524,6 +579,7 @@
       escutarSolicitacoes(); 
       escutarMensagensPrivadas();
       escutarLigacoesRecebidas();
+      escutarGruposGerais();
       carregarPostsGerais();
     }
 
@@ -541,6 +597,8 @@
       document.getElementById('adminView').classList.add('hidden');
       document.getElementById('chatView').classList.add('hidden');
       document.getElementById('callView').classList.add('hidden');
+      document.getElementById('groupsView').classList.add('hidden');
+      document.getElementById('groupChatView').classList.add('hidden');
     }
 
     window.irParaFeed = function() {
@@ -560,6 +618,14 @@
       document.getElementById('feedTitle').innerText = "✨ For You (Em Alta na Plataforma)";
       perfilAberto = null;
       renderizarFeed(todosPosts, 'feedContainer', true);
+    };
+
+    window.abrirAbaGrupos = function() {
+      modoAtual = 'groups';
+      esconderTodasAsAbas();
+      document.getElementById('groupsView').classList.remove('hidden');
+      perfilAberto = null;
+      renderizarMeusGrupos();
     };
 
     window.abrirLojaSelo = function() {
@@ -583,6 +649,229 @@
       document.getElementById('adminView').classList.remove('hidden');
       perfilAberto = null;
       renderizarPainelAdmin();
+    };
+
+    // FUNÇÕES DO SISTEMA DE GRUPOS
+    window.abrirModalCriarGrupo = function() {
+      document.getElementById('nomeGrupoInput').value = '';
+      document.getElementById('pesquisaMembrosInput').value = '';
+      membrosSelecionadosParaGrupo = [usuarioAtual]; // criador já entra automático
+      renderizarMembrosSelecionados();
+      document.getElementById('resultadosPesquisaMembros').innerHTML = '<div style="font-size: 11px; color: #777;">Digite algo para buscar pessoas...</div>';
+      document.getElementById('modalCriarGrupo').classList.remove('hidden');
+    };
+
+    window.fecharModalCriarGrupo = function() {
+      document.getElementById('modalCriarGrupo').classList.add('hidden');
+    };
+
+    window.filtrarPerfisParaGrupo = function() {
+      const termo = document.getElementById('pesquisaMembrosInput').value.trim().toLowerCase();
+      const container = document.getElementById('resultadosPesquisaMembros');
+      container.innerHTML = '';
+
+      if (!termo) {
+        container.innerHTML = '<div style="font-size: 11px; color: #777;">Digite algo para buscar pessoas...</div>';
+        return;
+      }
+
+      let encontrados = 0;
+      Object.keys(todosUsuarios).forEach(username => {
+        if (username.includes(termo)) {
+          if (username !== usuarioAtual && !membrosSelecionadosParaGrupo.includes(username)) {
+            encontrados++;
+            const uData = todosUsuarios[username] || {};
+            const verifBadge = uData.verificado ? ' ✔' : '';
+
+            const item = document.createElement('div');
+            item.style.cssText = "display: flex; justify-content: space-between; align-items: center; padding: 4px; border-bottom: 1px solid #eee; font-size: 12px;";
+            item.innerHTML = `
+              <span>@${username}${verifBadge}</span>
+              <button style="font-size: 10px; padding: 2px 6px;" onclick="adicionarMembroGrupo('${username}')">+ Adicionar</button>
+            `;
+            container.appendChild(item);
+          }
+        }
+      });
+
+      if (encontrados === 0) {
+        container.innerHTML = '<div style="font-size: 11px; color: #777;">Nenhuma pessoa encontrada.</div>';
+      }
+    };
+
+    window.adicionarMembroGrupo = function(username) {
+      if (!membrosSelecionadosParaGrupo.includes(username)) {
+        membrosSelecionadosParaGrupo.push(username);
+        renderizarMembrosSelecionados();
+        filtrarPerfisParaGrupo();
+      }
+    };
+
+    window.removerMembroGrupo = function(username) {
+      if (username === usuarioAtual) return; // criador não se remove
+      membrosSelecionadosParaGrupo = membrosSelecionadosParaGrupo.filter(u => u !== username);
+      renderizarMembrosSelecionados();
+      filtrarPerfisParaGrupo();
+    };
+
+    function renderizarMembrosSelecionados() {
+      const container = document.getElementById('listaMembrosSelecionadosContainer');
+      container.innerHTML = '';
+
+      if (membrosSelecionadosParaGrupo.length === 0) {
+        container.innerHTML = '<div style="font-size: 11px; color: #777;">Nenhuma pessoa adicionada ainda.</div>';
+        return;
+      }
+
+      membrosSelecionadosParaGrupo.forEach(username => {
+        const tag = document.createElement('div');
+        tag.style.cssText = "background: #e1bee7; color: #4a148c; padding: 3px 8px; border-radius: 4px; font-size: 11px; display: flex; align-items: center; gap: 5px; font-weight: bold;";
+        
+        let botaoRemover = '';
+        if (username !== usuarioAtual) {
+          botaoRemover = `<span style="cursor:pointer; color: #a00000; font-weight: bold;" onclick="removerMembroGrupo('${username}')">✕</span>`;
+        }
+        
+        tag.innerHTML = `<span>@${username}</span> ${botaoRemover}`;
+        container.appendChild(tag);
+      });
+    }
+
+    window.confirmarCriacaoGrupo = async function() {
+      const nomeGrupo = document.getElementById('nomeGrupoInput').value.trim();
+      if (!nomeGrupo) {
+        alert("Por favor, digite um nome para o grupo!");
+        return;
+      }
+
+      try {
+        const novoGrupoObj = {
+          nome: nomeGrupo,
+          criador: usuarioAtual,
+          membros: membrosSelecionadosParaGrupo,
+          timestamp: Date.now()
+        };
+
+        await push(ref(db, 'grupos'), novoGrupoObj);
+        fecharModalCriarGrupo();
+        alert("Grupo criado com sucesso!");
+        abrirAbaGrupos();
+      } catch (err) {
+        alert("Erro ao criar grupo: " + err.message);
+      }
+    };
+
+    function escutarGruposGerais() {
+      onValue(ref(db, 'grupos'), (snap) => {
+        todosGrupos = snap.val() || {};
+        if (modoAtual === 'groups') {
+          renderizarMeusGrupos();
+        }
+        if (grupoAtivoId) {
+          carregarMensagensDoGrupo(grupoAtivoId);
+        }
+      });
+    }
+
+    function renderizarMeusGrupos() {
+      const container = document.getElementById('listaMeusGruposContainer');
+      container.innerHTML = '';
+
+      let meusGruposKeys = [];
+      Object.keys(todosGrupos).forEach(gKey => {
+        const g = todosGrupos[gKey];
+        if (g.membros && g.membros.includes(usuarioAtual)) {
+          meusGruposKeys.push(gKey);
+        }
+      });
+
+      if (meusGruposKeys.length === 0) {
+        container.innerHTML = '<div style="font-size: 12px; color: #777;">Você não está participando de nenhum grupo ainda. Crie um no botão acima!</div>';
+        return;
+      }
+
+      meusGruposKeys.reverse();
+      meusGruposKeys.forEach(gKey => {
+        const g = todosGrupos[gKey];
+        const card = document.createElement('div');
+        card.style.cssText = "background: #fff; border: 1px solid #ccc; padding: 12px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;";
+        card.innerHTML = `
+          <div>
+            <strong style="font-size: 14px; color: #4a148c;">👥 ${g.nome}</strong>
+            <div style="font-size: 11px; color: #666; margin-top: 3px;">Membros: ${g.membros.length} pessoas (Criador: @${g.criador})</div>
+          </div>
+          <div>
+            <button class="btn-group" onclick="abrirChatDoGrupo('${gKey}')">Abrir Grupo</button>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    window.abrirChatDoGrupo = function(gKey) {
+      grupoAtivoId = gKey;
+      const g = todosGrupos[gKey] || {};
+      esconderTodasAsAbas();
+      document.getElementById('groupChatView').classList.remove('hidden');
+      document.getElementById('groupChatNameTitle').innerText = '👥 ' + (g.nome || 'Grupo');
+      carregarMensagensDoGrupo(gKey);
+    };
+
+    window.voltarParaListaGrupos = function() {
+      grupoAtivoId = null;
+      abrirAbaGrupos();
+    };
+
+    function carregarMensagensDoGrupo(gKey) {
+      const container = document.getElementById('groupChatMessagesContainer');
+      container.innerHTML = '<div style="font-size: 11px; color: #777;">Carregando mensagens do grupo...</div>';
+
+      get(child(ref(db), `mensagens_grupos/${gKey}`)).then((snap) => {
+        container.innerHTML = '';
+        if (!snap.exists()) {
+          container.innerHTML = '<div style="font-size: 11px; color: #777; text-align: center;">Nenhuma mensagem no grupo ainda.</div>';
+          return;
+        }
+
+        const msgs = snap.val();
+        Object.keys(msgs).forEach(mKey => {
+          const m = msgs[mKey];
+          const ehMeu = m.remetente === usuarioAtual;
+          const alinhamento = ehMeu ? 'align-self: flex-end; background: #f3e5f5;' : 'align-self: flex-start; background: #fff; border: 1px solid #ddd;';
+          const horaStr = new Date(m.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+          const autorData = todosUsuarios[m.remetente] || {};
+          const verifBadge = autorData.verificado ? ' ✔' : '';
+
+          const balao = document.createElement('div');
+          balao.style.cssText = `max-width: 75%; padding: 8px; border-radius: 6px; font-size: 13px; margin-bottom: 5px; word-break: break-word; ${alinhamento}`;
+          balao.innerHTML = `
+            <div style="font-size: 11px; font-weight: bold; color: #4a148c; margin-bottom: 2px;">@${m.remetente}${verifBadge}</div>
+            <div>${m.texto}</div>
+            <div style="font-size: 9px; color: #666; text-align: right; margin-top: 3px;">${horaStr}</div>
+          `;
+          container.appendChild(balao);
+        });
+
+        container.scrollTop = container.scrollHeight;
+      });
+    }
+
+    window.enviarMensagemGrupo = async function() {
+      const input = document.getElementById('groupChatInputContent');
+      const texto = input.value.trim();
+      if (!texto || !grupoAtivoId) return;
+
+      try {
+        await push(ref(db, `mensagens_grupos/${grupoAtivoId}`), {
+          remetente: usuarioAtual,
+          texto: texto,
+          timestamp: Date.now()
+        });
+        input.value = '';
+        carregarMensagensDoGrupo(grupoAtivoId);
+      } catch (err) {
+        alert("Erro ao enviar mensagem no grupo: " + err.message);
+      }
     };
 
     window.iniciarLigacaoPerfil = function() {
