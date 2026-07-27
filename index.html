@@ -2204,14 +2204,15 @@
       resultsDiv.innerHTML = '';
       if (!query) return;
 
-      Object.keys(todosUsuarios).forEach(nomeUser => {
-        if (nomeUser.includes(query)) {
-          const u = todosUsuarios[nomeUser];
-          const verifBadge = u.verificado ? '<span class="badge-verified">✔</span> ✨' : '';
+      Object.keys(todosUsuarios).forEach(username => {
+        if (username.includes(query)) {
+          const uData = todosUsuarios[username] || {};
+          const verifBadge = uData.verificado ? ' <span class="badge-verified" title="Verificado">✔</span>' : '';
+          
           const div = document.createElement('div');
-          div.style.padding = '4px'; div.style.cursor = 'pointer';
-          div.onclick = () => { abrirPerfil(nomeUser); document.getElementById('searchView').classList.add('hidden'); };
-          div.innerHTML = `<span style="font-size:13px;">👤 <strong>@${nomeUser}${verifBadge}</strong></span>`;
+          div.style.cssText = "padding: 6px; border-bottom: 1px solid #ddd; background: #fff; cursor: pointer; display: flex; align-items: center; gap: 8px;";
+          div.innerHTML = `<img src="${uData.foto || 'https://via.placeholder.com/24'}" style="width:24px; height:24px; border-radius:50%; object-fit:cover;"> <span style="font-weight:bold; font-size:13px;">@${username}${verifBadge}</span>`;
+          div.onclick = () => { abrirPerfil(username); };
           resultsDiv.appendChild(div);
         }
       });
@@ -2219,141 +2220,127 @@
 
     window.abrirMeuPerfil = function() { abrirPerfil(usuarioAtual); };
 
-    window.abrirPerfil = function(nomeUser) {
-      perfilAberto = nomeUser;
+    window.abrirPerfil = function(username) {
+      perfilAberto = username;
       esconderTodasAsAbas();
       document.getElementById('profileView').classList.remove('hidden');
-      carregarPerfil(nomeUser);
-    };
 
-    function carregarPerfil(nomeUser) {
-      const uData = todosUsuarios[nomeUser] || {};
+      const uData = todosUsuarios[username] || {};
       const isVerificado = uData.verificado === true;
-      const verifBadge = isVerificado ? '<span class="badge-verified">✔</span> <span class="sparkle-icon">✨</span>' : '';
+      const cardBox = document.getElementById('profileCardBox');
 
-      document.getElementById('profName').innerHTML = '@' + nomeUser + ' ' + verifBadge;
-      document.getElementById('profAvatar').src = uData.foto || 'https://via.placeholder.com/70/ccc/666?text=Foto';
+      cardBox.className = 'profile-card';
 
-      const profCard = document.getElementById('profileCardBox');
-      const profAvatar = document.getElementById('profAvatar');
-      const btnEditar = document.getElementById('btnEditarNome');
-      const btnTema = document.getElementById('btnTemaPerfil');
-
-      // Limpar decorações anteriores
-      const floresAntigas = profCard.querySelectorAll('.flor-decorativa');
-      floresAntigas.forEach(f => f.remove());
-
-      // Aplicar Tema
-      const temaAtual = uData.tema || 'claro';
-      profCard.classList.remove('profile-theme-flores', 'profile-theme-dark', 'profile-theme-neon', 'profile-theme-gold');
-
-      if (temaAtual === 'flores') {
-        profCard.classList.add('profile-theme-flores');
-        const posicoes = [
-          {top: '-8px', left: '10px'}, {top: '15px', right: '-10px'},
-          {bottom: '-8px', left: '40%'}, {top: '40%', left: '-10px'}
-        ];
-        posicoes.forEach(pos => {
-          const flor = document.createElement('div');
-          flor.className = 'flor-decorativa';
-          flor.innerHTML = '🌸';
-          Object.keys(pos).forEach(k => flor.style[k] = pos[k]);
-          profCard.appendChild(flor);
-        });
-      } else if (temaAtual === 'dark') {
-        profCard.classList.add('profile-theme-dark');
-      } else if (temaAtual === 'neon') {
-        profCard.classList.add('profile-theme-neon');
-      } else if (temaAtual === 'gold') {
-        profCard.classList.add('profile-theme-gold');
+      const temaPerfil = uData.tema || 'claro';
+      if (temaPerfil === 'flores') {
+        cardBox.classList.add('profile-theme-flores');
+      } else if (temaPerfil === 'dark') {
+        cardBox.classList.add('profile-theme-dark');
+      } else if (temaPerfil === 'neon') {
+        cardBox.classList.add('profile-theme-neon');
+      } else if (temaPerfil === 'gold') {
+        cardBox.classList.add('profile-theme-gold');
+      } else if (isVerificado) {
+        cardBox.classList.add('profile-verified');
       }
 
-      if (isVerificado) {
-        profCard.classList.add('profile-verified');
-        profAvatar.classList.add('avatar-verified');
+      const avatarImg = document.getElementById('profAvatar');
+      avatarImg.src = uData.foto || 'https://via.placeholder.com/70/ccc/666?text=Foto';
+      avatarImg.className = isVerificado ? 'avatar-large avatar-verified' : 'avatar-large';
+
+      const badgeHtml = isVerificado ? '<span class="badge-verified" title="Verificado">✔</span> <span class="sparkle-icon">✨</span>' : '';
+      document.getElementById('profName').innerHTML = '@' + username + badgeHtml;
+
+      const avatarText = document.getElementById('profAvatarText');
+      const btnEditarNome = document.getElementById('btnEditarNome');
+      const btnTemaPerfil = document.getElementById('btnTemaPerfil');
+
+      if (username === usuarioAtual) {
+        avatarText.classList.remove('hidden');
+        avatarText.innerText = "(Mudar foto)";
+        avatarImg.style.cursor = 'pointer';
+        btnEditarNome.classList.remove('hidden');
+        btnTemaPerfil.classList.remove('hidden');
       } else {
-        profCard.classList.remove('profile-verified');
-        profAvatar.classList.remove('avatar-verified');
+        avatarText.classList.add('hidden');
+        avatarImg.style.cursor = 'default';
+        btnEditarNome.classList.add('hidden');
+        btnTemaPerfil.classList.add('hidden');
       }
 
-      if (nomeUser === usuarioAtual) {
-        btnEditar.classList.remove('hidden');
-        btnTema.classList.remove('hidden');
-        document.getElementById('profAvatarText').classList.remove('hidden');
-      } else {
-        btnEditar.classList.add('hidden');
-        btnTema.classList.add('hidden');
-        document.getElementById('profAvatarText').classList.add('hidden');
-      }
+      get(child(ref(db), `seguidores/${username}`)).then((snapSeguidores) => {
+        const seguidores = snapSeguidores.val() || {};
+        const totalSeguidores = Object.keys(seguidores).length;
+        document.getElementById('profSeguidores').innerText = totalSeguidores;
 
-      const btnFollow = document.getElementById('profFollowBtn');
-      const btnMsg = document.getElementById('profMsgBtn');
-      const btnCall = document.getElementById('profCallBtn');
+        const euSigo = seguidores[usuarioAtual] === true;
+        const followBtn = document.getElementById('profFollowBtn');
+        const msgBtn = document.getElementById('profMsgBtn');
+        const callBtn = document.getElementById('profCallBtn');
 
-      if (nomeUser === usuarioAtual) {
-        btnFollow.classList.add('hidden');
-        btnMsg.classList.add('hidden');
-        btnCall.classList.add('hidden');
-      } else {
-        btnMsg.classList.remove('hidden');
-        btnCall.classList.remove('hidden');
-        btnFollow.classList.remove('hidden');
-        
-        const seguindoMap = uData.seguidores || {};
-        const euSigo = seguindoMap[usuarioAtual] === true;
-        btnFollow.innerText = euSigo ? "Seguindo" : "Seguir";
-        btnFollow.className = euSigo ? "" : "btn-foryou";
-      }
-
-      const seguidoresTotal = uData.seguidores ? Object.keys(uData.seguidores).length : 0;
-      const seguindoTotal = uData.seguindo ? Object.keys(uData.seguindo).length : 0;
-      document.getElementById('profSeguidores').innerText = seguidoresTotal;
-      document.getElementById('profSeguindo').innerText = seguindoTotal;
-
-      renderizarFeedPerfil(nomeUser);
-    }
-
-    window.toggleSeguir = async function() {
-      if (!perfilAberto || perfilAberto === usuarioAtual) return;
-      const uData = todosUsuarios[perfilAberto] || {};
-      const seguindoMap = uData.seguidores || {};
-      const euSigo = seguindoMap[usuarioAtual] === true;
-
-      const updates = {};
-      if (euSigo) {
-        updates[`usuarios/${perfilAberto}/seguidores/${usuarioAtual}`] = null;
-        updates[`usuarios/${usuarioAtual}/seguindo/${perfilAberto}`] = null;
-      } else {
-        updates[`usuarios/${perfilAberto}/seguidores/${usuarioAtual}`] = true;
-        updates[`usuarios/${usuarioAtual}/seguindo/${perfilAberto}`] = true;
-      }
-
-      try {
-        await update(ref(db), updates);
-      } catch (err) {
-        alert("Erro ao seguir/deixar de seguir: " + err.message);
-      }
-    };
-
-    function renderizarFeedPerfil(nomeUser) {
-      const container = document.getElementById('profileFeedContainer');
-      container.innerHTML = '';
-
-      let postsDoPerfil = [];
-      Object.keys(todosPosts).forEach(pKey => {
-        if (todosPosts[pKey].autor === nomeUser) {
-          postsDoPerfil.push({ id: pKey, ...todosPosts[pKey] });
+        if (username === usuarioAtual) {
+          followBtn.classList.add('hidden');
+          msgBtn.classList.add('hidden');
+          callBtn.classList.add('hidden');
+        } else {
+          followBtn.classList.remove('hidden');
+          msgBtn.classList.remove('hidden');
+          callBtn.classList.remove('hidden');
+          
+          if (euSigo) {
+            followBtn.innerText = "Seguindo";
+            followBtn.style.background = "#e0e0e0";
+          } else {
+            followBtn.innerText = "Seguir";
+            followBtn.style.background = "linear-gradient(to bottom, #fff, #e0e0e0)";
+          }
         }
       });
 
-      if (postsDoPerfil.length === 0) {
-        container.innerHTML = '<div style="font-size:12px; color:#777;">Este perfil ainda não publicou nada.</div>';
+      get(child(ref(db), `seguindo/${username}`)).then((snapSeguindo) => {
+        const seguindo = snapSeguindo.val() || {};
+        document.getElementById('profSeguindo').innerText = Object.keys(seguindo).length;
+      });
+
+      renderizarFeedPerfil(username);
+    };
+
+    window.toggleSeguir = function() {
+      if (!perfilAberto || perfilAberto === usuarioAtual) return;
+
+      const seguidorRef = ref(db, `seguidores/${perfilAberto}/${usuarioAtual}`);
+      const seguindoRef = ref(db, `seguindo/${usuarioAtual}/${perfilAberto}`);
+
+      get(seguidorRef).then((snap) => {
+        if (snap.exists()) {
+          remove(seguidorRef);
+          remove(seguindoRef);
+        } else {
+          set(seguidorRef, true);
+          set(seguindoRef, true);
+        }
+        setTimeout(() => abrirPerfil(perfilAberto), 300);
+      });
+    };
+
+    function renderizarFeedPerfil(username) {
+      const container = document.getElementById('profileFeedContainer');
+      container.innerHTML = '';
+
+      let postsUsuario = [];
+      Object.keys(todosPosts).forEach(postId => {
+        if (todosPosts[postId].autor === username) {
+          postsUsuario.push({ id: postId, ...todosPosts[postId] });
+        }
+      });
+
+      if (postsUsuario.length === 0) {
+        container.innerHTML = '<div style="font-size:12px; color:#777;">Nenhuma postagem neste perfil.</div>';
         return;
       }
 
-      postsDoPerfil.sort((a, b) => b.data - a.data);
-
-      postsDoPerfil.forEach(post => {
+      postsUsuario.sort((a, b) => b.data - a.data);
+      postsUsuario.forEach(post => {
         const autorData = todosUsuarios[post.autor] || {};
         const isVerificado = autorData.verificado === true;
         const avatarUrl = autorData.foto || 'https://via.placeholder.com/36/ccc/666?text=Foto';
@@ -2381,6 +2368,28 @@
 
         const textoHTML = post.texto ? `<div class="post-content">${post.texto}</div>` : '';
 
+        const comentarios = post.comentarios || {};
+        let comentariosHTML = '';
+        Object.keys(comentarios).forEach(cId => {
+          const com = comentarios[cId];
+          const comAutorData = todosUsuarios[com.autor] || {};
+          const comVerificado = comAutorData.verificado === true ? '<span class="badge-verified">✔</span>' : '';
+          const comLikes = com.likes || {};
+          const totalComLikes = Object.keys(comLikes).length;
+          const euCurtiCom = comLikes[usuarioAtual] === true;
+
+          comentariosHTML += `
+            <div class="comment-item">
+              <div><strong>@${com.autor}${comVerificado}:</strong> ${com.texto}</div>
+              <div style="margin-top: 4px;">
+                <button style="font-size: 10px; padding: 2px 6px;" onclick="toggleCurtidaComentario('${post.id}', '${cId}', ${euCurtiCom})">
+                  ${euCurtiCom ? '❤️ Curtido' : '🤍 Curtir'} (${totalComLikes})
+                </button>
+              </div>
+            </div>
+          `;
+        });
+
         const postHTML = `
           <div class="post-box ${classePostVerificado}">
             <div class="post-header">
@@ -2397,6 +2406,15 @@
                 ${euCurti ? '❤️ Curtido' : '🤍 Curtir'} (${totalLikes})
               </button>
               ${botaoExcluir}
+            </div>
+
+            <div class="comments-section">
+              <div style="font-size: 12px; font-weight: bold; margin-bottom: 5px;">Comentários:</div>
+              <div>${comentariosHTML || '<div style="font-size:11px; color:#777;">Nenhum comentário.</div>'}</div>
+              <div style="display: flex; gap: 5px; margin-top: 6px;">
+                <input type="text" id="commentInput-${post.id}" placeholder="Escreva um comentário..." style="flex: 1; font-size: 12px;">
+                <button style="font-size: 11px;" onclick="enviarComentario('${post.id}')">Comentar</button>
+              </div>
             </div>
           </div>
         `;
