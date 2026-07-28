@@ -1728,6 +1728,11 @@ function renderizarFeed(postsObj, containerId, ordenForYou = false) {
 
   listaKeys.forEach((postId, index) => {
     const post = postsObj[postId];
+    
+    // Registrar pontuação de quem já viu o post
+    const visualizacoesRef = ref(db, `posts/${postId}/visualizacoes/${usuarioAtual}`);
+    set(visualizacoesRef, true);
+
     const autorData = todosUsuarios[post.autor] || {};
     const isVerificado = autorData.verificado === true;
     const avatarUrl = autorData.foto || 'https://via.placeholder.com/36/ccc/666?text=Foto';
@@ -1740,6 +1745,24 @@ function renderizarFeed(postsObj, containerId, ordenForYou = false) {
     const classeAvatarVerificado = isVerificado ? 'avatar-verified' : '';
     let forYouBadgeHTML = (ordenForYou && index === 0) ? `<div class="foryou-badge">🔥 #1 EM DESTAQUE NO FOR YOU</div>` : '';
     
+    // Lógica pedida: Pessoas que você segue que curtiram este post
+    const meuUsuarioData = todosUsuarios[usuarioAtual] || {};
+    const quemEuSigo = meuUsuarioData.seguindo || {};
+    let amigosQueCurtiram = [];
+    Object.keys(likes).forEach(userQueCurtiu => {
+      if (userQueCurtiu !== usuarioAtual && quemEuSigo[userQueCurtiu] === true) {
+        amigosQueCurtiram.push(userQueCurtiu);
+      }
+    });
+
+    let socialProofHTML = '';
+    if (amigosQueCurtiram.length > 0) {
+      const primeiroAmigo = amigosQueCurtiram[0];
+      const outrosAmigosCount = amigosQueCurtiram.length - 1;
+      let textoOutros = outrosAmigosCount > 0 ? ` e mais ${outrosAmigosCount} pessoa(s) que você segue` : '';
+      socialProofHTML = `<div style="font-size: 11px; color: #0077cc; margin-bottom: 6px; font-weight: bold;">@${primeiroAmigo} curtiu esse post${textoOutros}</div>`;
+    }
+
     const botaoExcluir = (post.autor === usuarioAtual) ? `<button class="btn-delete" onclick="window.abrirModalExclusao('${postId}')">Excluir</button>` : '';
     let midiaHTML = '';
     if (post.midia) {
@@ -1772,6 +1795,7 @@ function renderizarFeed(postsObj, containerId, ordenForYou = false) {
             <span style="font-size:10px; color:#666;"> - ${dateStr}</span>
           </div>
         </div>
+        ${socialProofHTML}
         ${textoHTML}
         ${midiaHTML}
         <div class="post-footer">
@@ -1899,42 +1923,21 @@ function carregarPerfil(username) {
     postsContainer.innerHTML = '<div style="font-size: 12px; color: #777;">Este usuário ainda não publicou nada.</div>';
     return;
   }
-  meusPostsKeys.reverse();
-  meusPostsKeys.forEach(postId => {
-    const post = todosPosts[postId];
-    const dateStr = new Date(post.data).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    let midiaHTML = '';
-    if (post.midia) {
-      if (post.tipoMidia === 'video') {
-        midiaHTML = `<video src="${post.midia}" class="post-video-big" controls preload="metadata" playsinline></video>`;
-      } else {
-        midiaHTML = `<img src="${post.midia}" class="post-image-big">`;
-      }
-    }
-    const textoHTML = post.texto ? `<div class="post-content">${post.texto}</div>` : '';
-    const item = document.createElement('div');
-    item.className = 'post-box';
-    item.innerHTML = `
-      <div style="font-size: 10px; color: #666; margin-bottom: 6px;">${dateStr}</div>
-      ${textoHTML}
-      ${midiaHTML}
-    `;
-    postsContainer.appendChild(item);
-  });
 }
 
 window.toggleSeguir = async function() {
   if (!perfilAberto || perfilAberto === usuarioAtual) return;
-  const meuSeguindoRef = ref(db, `usuarios/${usuarioAtual}/seguindo/${perfilAberto}`);
-  const outroSeguidoresRef = ref(db, `usuarios/${perfilAberto}/seguidores/${usuarioAtual}`);
-  const snapshot = await get(meuSeguindoRef);
+  const euSigoRef = ref(db, `usuarios/${perfilAberto}/seguidores/${usuarioAtual}`);
+  const sigoOutroRef = ref(db, `usuarios/${usuarioAtual}/seguindo/${perfilAberto}`);
+  const snapshot = await get(euSigoRef);
   if (snapshot.exists()) {
-    await remove(meuSeguindoRef);
-    await remove(outroSeguidoresRef);
+    await remove(euSigoRef);
+    await remove(sigoOutroRef);
   } else {
-    await set(meuSeguindoRef, true);
-    await set(outroSeguidoresRef, true);
+    await set(euSigoRef, true);
+    await set(sigoOutroRef, true);
   }
+  carregarPerfil(perfilAberto);
 };
 </script>
 </body>
