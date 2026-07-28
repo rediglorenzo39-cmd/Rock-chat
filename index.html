@@ -1861,50 +1861,52 @@ function carregarPerfil(username) {
     }
   }
 
-  const meuFeedContainer = document.getElementById('profileFeedContainer');
-  meuFeedContainer.innerHTML = '';
-  let postsDoUser = {};
+  const postsContainer = document.getElementById('profileFeedContainer');
+  postsContainer.innerHTML = '';
+  let meusPostsKeys = [];
   Object.keys(todosPosts).forEach(pKey => {
-    if (todosPosts[pKey].autor === username) { postsDoUser[pKey] = todosPosts[pKey]; }
+    if (todosPosts[pKey].autor === username) { meusPostsKeys.push(pKey); }
   });
-  renderizarFeed(postsDoUser, 'profileFeedContainer', false);
+  if (meusPostsKeys.length === 0) {
+    postsContainer.innerHTML = '<div style="font-size: 12px; color: #777;">Este usuário ainda não publicou nada.</div>';
+    return;
+  }
+  meusPostsKeys.reverse();
+  meusPostsKeys.forEach(postId => {
+    const post = todosPosts[postId];
+    const dateStr = new Date(post.data).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    let midiaHTML = '';
+    if (post.midia) {
+      if (post.tipoMidia === 'video') {
+        midiaHTML = `<video src="${post.midia}" class="post-video-big" controls preload="metadata" playsinline></video>`;
+      } else {
+        midiaHTML = `<img src="${post.midia}" class="post-image-big">`;
+      }
+    }
+    const textoHTML = post.texto ? `<div class="post-content">${post.texto}</div>` : '';
+    const item = document.createElement('div');
+    item.className = 'post-box';
+    item.innerHTML = `
+      <div style="font-size: 10px; color: #666; margin-bottom: 6px;">${dateStr}</div>
+      ${textoHTML}
+      ${midiaHTML}
+    `;
+    postsContainer.appendChild(item);
+  });
 }
 
 window.toggleSeguir = async function() {
   if (!perfilAberto || perfilAberto === usuarioAtual) return;
   const meuSeguindoRef = ref(db, `usuarios/${usuarioAtual}/seguindo/${perfilAberto}`);
-  const outroSeguidorRef = ref(db, `usuarios/${perfilAberto}/seguidores/${usuarioAtual}`);
-  const userData = todosUsuarios[usuarioAtual] || {};
-  const seguindoObj = userData.seguindo || {};
-  const euSigo = seguindoObj[perfilAberto] === true;
-  try {
-    if (euSigo) {
-      await remove(meuSeguindoRef);
-      await remove(outroSeguidorRef);
-    } else {
-      await set(meuSeguindoRef, true);
-      await set(outroSeguidorRef, true);
-    }
-    carregarPerfil(perfilAberto);
-  } catch (err) { alert("Erro ao alterar seguimento: " + err.message); }
-};
-
-window.buscarPerfis = function() {
-  const termo = document.getElementById('searchInput').value.trim().toLowerCase();
-  const resultsContainer = document.getElementById('searchResults');
-  resultsContainer.innerHTML = '';
-  if (!termo) return;
-  Object.keys(todosUsuarios).forEach(username => {
-    if (username.includes(termo)) {
-      const uData = todosUsuarios[username] || {};
-      const verifBadge = uData.verificado ? ' ✔' : '';
-      const card = document.createElement('div');
-      card.style.cssText = "padding: 6px; background: #fff; border: 1px solid #ddd; margin-bottom: 4px; cursor: pointer; display: flex; align-items: center; gap: 8px;";
-      card.innerHTML = `<img class="avatar-mini" src="${uData.foto || 'https://via.placeholder.com/36'}"><strong>@${username}${verifBadge}</strong>`;
-      card.onclick = () => { abrirPerfil(username); document.getElementById('searchView').classList.add('hidden'); };
-      resultsContainer.appendChild(card);
-    }
-  });
+  const outroSeguidoresRef = ref(db, `usuarios/${perfilAberto}/seguidores/${usuarioAtual}`);
+  const snapshot = await get(meuSeguindoRef);
+  if (snapshot.exists()) {
+    await remove(meuSeguindoRef);
+    await remove(outroSeguidoresRef);
+  } else {
+    await set(meuSeguindoRef, true);
+    await set(outroSeguidoresRef, true);
+  }
 };
 </script>
 </body>
