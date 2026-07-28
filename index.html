@@ -2207,220 +2207,139 @@
       Object.keys(todosUsuarios).forEach(username => {
         if (username.includes(query)) {
           const uData = todosUsuarios[username] || {};
-          const verifBadge = uData.verificado ? ' <span class="badge-verified" title="Verificado">✔</span>' : '';
-          
-          const div = document.createElement('div');
-          div.style.cssText = "padding: 6px; border-bottom: 1px solid #ddd; background: #fff; cursor: pointer; display: flex; align-items: center; gap: 8px;";
-          div.innerHTML = `<img src="${uData.foto || 'https://via.placeholder.com/24'}" style="width:24px; height:24px; border-radius:50%; object-fit:cover;"> <span style="font-weight:bold; font-size:13px;">@${username}${verifBadge}</span>`;
-          div.onclick = () => { abrirPerfil(username); };
-          resultsDiv.appendChild(div);
+          const isVerificado = uData.verificado === true;
+          const verifBadge = isVerificado ? '<span class="badge-verified">✔</span>' : '';
+
+          const item = document.createElement('div');
+          item.style.cssText = "padding: 6px; border-bottom: 1px solid #ddd; background: #fff; cursor: pointer; display: flex; align-items: center; gap: 8px;";
+          item.innerHTML = `
+            <img src="${uData.foto || 'https://via.placeholder.com/36/ccc/666?text=Foto'}" class="avatar-mini" style="width: 24px; height: 24px;">
+            <span style="font-size: 13px; font-weight: bold;">@${username} ${verifBadge}</span>
+          `;
+          item.onclick = () => abrirPerfil(username);
+          resultsDiv.appendChild(item);
         }
       });
     };
 
-    window.abrirMeuPerfil = function() { abrirPerfil(usuarioAtual); };
+    window.abrirMeuPerfil = function() {
+      abrirPerfil(usuarioAtual);
+    };
 
     window.abrirPerfil = function(username) {
       perfilAberto = username;
       esconderTodasAsAbas();
       document.getElementById('profileView').classList.remove('hidden');
+      carregarPerfil(username);
+    };
 
+    function carregarPerfil(username) {
       const uData = todosUsuarios[username] || {};
       const isVerificado = uData.verificado === true;
-      const cardBox = document.getElementById('profileCardBox');
+      const verifBadge = isVerificado ? '<span class="badge-verified">✔</span> <span class="sparkle-icon">✨</span>' : '';
 
-      cardBox.className = 'profile-card';
+      document.getElementById('profName').innerHTML = '@' + username + verifBadge;
+      document.getElementById('profAvatar').src = uData.foto || 'https://via.placeholder.com/70/ccc/666?text=Foto';
+
+      const cardBox = document.getElementById('profileCardBox');
+      cardBox.className = "profile-card";
+      
+      const florAntiga = cardBox.querySelector('.flor-decorativa');
+      if (florAntiga) florAntiga.remove();
 
       const temaPerfil = uData.tema || 'claro';
-      if (temaPerfil === 'flores') {
+      if (isVerificado) {
+        cardBox.classList.add('profile-verified');
+      } else if (temaPerfil === 'flores') {
         cardBox.classList.add('profile-theme-flores');
+        const flor = document.createElement('div');
+        flor.className = 'flor-decorativa';
+        flor.innerText = '🌸';
+        flor.style.top = '10px';
+        flor.style.right = '15px';
+        cardBox.appendChild(flor);
       } else if (temaPerfil === 'dark') {
         cardBox.classList.add('profile-theme-dark');
       } else if (temaPerfil === 'neon') {
         cardBox.classList.add('profile-theme-neon');
       } else if (temaPerfil === 'gold') {
         cardBox.classList.add('profile-theme-gold');
-      } else if (isVerificado) {
-        cardBox.classList.add('profile-verified');
       }
 
-      const avatarImg = document.getElementById('profAvatar');
-      avatarImg.src = uData.foto || 'https://via.placeholder.com/70/ccc/666?text=Foto';
-      avatarImg.className = isVerificado ? 'avatar-large avatar-verified' : 'avatar-large';
-
-      const badgeHtml = isVerificado ? '<span class="badge-verified" title="Verificado">✔</span> <span class="sparkle-icon">✨</span>' : '';
-      document.getElementById('profName').innerHTML = '@' + username + badgeHtml;
-
+      const avatarEl = document.getElementById('profAvatar');
       const avatarText = document.getElementById('profAvatarText');
+      const btnTema = document.getElementById('btnTemaPerfil');
       const btnEditarNome = document.getElementById('btnEditarNome');
-      const btnTemaPerfil = document.getElementById('btnTemaPerfil');
 
       if (username === usuarioAtual) {
+        avatarEl.style.cursor = 'pointer';
         avatarText.classList.remove('hidden');
-        avatarText.innerText = "(Mudar foto)";
-        avatarImg.style.cursor = 'pointer';
+        btnTema.classList.remove('hidden');
         btnEditarNome.classList.remove('hidden');
-        btnTemaPerfil.classList.remove('hidden');
       } else {
+        avatarEl.style.cursor = 'default';
         avatarText.classList.add('hidden');
-        avatarImg.style.cursor = 'default';
+        btnTema.classList.add('hidden');
         btnEditarNome.classList.add('hidden');
-        btnTemaPerfil.classList.add('hidden');
       }
 
-      get(child(ref(db), `seguidores/${username}`)).then((snapSeguidores) => {
-        const seguidores = snapSeguidores.val() || {};
-        const totalSeguidores = Object.keys(seguidores).length;
-        document.getElementById('profSeguidores').innerText = totalSeguidores;
+      let totalSeguidores = 0;
+      let totalSeguindo = 0;
+      let euSigo = false;
 
-        const euSigo = seguidores[usuarioAtual] === true;
-        const followBtn = document.getElementById('profFollowBtn');
-        const msgBtn = document.getElementById('profMsgBtn');
-        const callBtn = document.getElementById('profCallBtn');
-
-        if (username === usuarioAtual) {
-          followBtn.classList.add('hidden');
-          msgBtn.classList.add('hidden');
-          callBtn.classList.add('hidden');
-        } else {
-          followBtn.classList.remove('hidden');
-          msgBtn.classList.remove('hidden');
-          callBtn.classList.remove('hidden');
-          
-          if (euSigo) {
-            followBtn.innerText = "Seguindo";
-            followBtn.style.background = "#e0e0e0";
-          } else {
-            followBtn.innerText = "Seguir";
-            followBtn.style.background = "linear-gradient(to bottom, #fff, #e0e0e0)";
-          }
+      Object.keys(todosUsuarios).forEach(userKey => {
+        const uObj = todosUsuarios[userKey];
+        if (uObj.seguindo && uObj.seguindo[username]) totalSeguidores++;
+        if (username === userKey && uObj.seguindo) {
+          totalSeguindo = Object.keys(uObj.seguindo).length;
+          if (uObj.seguindo[usuarioAtual]) euSigo = true;
         }
       });
 
-      get(child(ref(db), `seguindo/${username}`)).then((snapSeguindo) => {
-        const seguindo = snapSeguindo.val() || {};
-        document.getElementById('profSeguindo').innerText = Object.keys(seguindo).length;
+      document.getElementById('profSeguidores').innerText = totalSeguidores;
+      document.getElementById('profSeguindo').innerText = totalSeguindo;
+
+      const followBtn = document.getElementById('profFollowBtn');
+      const msgBtn = document.getElementById('profMsgBtn');
+      const callBtn = document.getElementById('profCallBtn');
+
+      if (username === usuarioAtual) {
+        followBtn.classList.add('hidden');
+        msgBtn.classList.add('hidden');
+        callBtn.classList.add('hidden');
+      } else {
+        followBtn.classList.remove('hidden');
+        msgBtn.classList.remove('hidden');
+        callBtn.classList.remove('hidden');
+
+        followBtn.innerText = euSigo ? 'Seguindo' : 'Seguir';
+        followBtn.style.background = euSigo ? '#e0e0e0' : 'linear-gradient(to bottom, #fff, #e0e0e0)';
+      }
+
+      const container = document.getElementById('profileFeedContainer');
+      container.innerHTML = '';
+      
+      let postsUsuario = {};
+      Object.keys(todosPosts).forEach(pKey => {
+        if (todosPosts[pKey].autor === username) {
+          postsUsuario[pKey] = todosPosts[pKey];
+        }
       });
 
-      renderizarFeedPerfil(username);
-    };
+      renderizarFeed(postsUsuario, 'profileFeedContainer', false);
+    }
 
     window.toggleSeguir = function() {
       if (!perfilAberto || perfilAberto === usuarioAtual) return;
-
-      const seguidorRef = ref(db, `seguidores/${perfilAberto}/${usuarioAtual}`);
-      const seguindoRef = ref(db, `seguindo/${usuarioAtual}/${perfilAberto}`);
-
-      get(seguidorRef).then((snap) => {
+      const segRef = ref(db, `usuarios/${usuarioAtual}/seguindo/${perfilAberto}`);
+      get(segRef).then((snap) => {
         if (snap.exists()) {
-          remove(seguidorRef);
-          remove(seguindoRef);
+          remove(segRef);
         } else {
-          set(seguidorRef, true);
-          set(seguindoRef, true);
+          set(segRef, true);
         }
-        setTimeout(() => abrirPerfil(perfilAberto), 300);
       });
     };
-
-    function renderizarFeedPerfil(username) {
-      const container = document.getElementById('profileFeedContainer');
-      container.innerHTML = '';
-
-      let postsUsuario = [];
-      Object.keys(todosPosts).forEach(postId => {
-        if (todosPosts[postId].autor === username) {
-          postsUsuario.push({ id: postId, ...todosPosts[postId] });
-        }
-      });
-
-      if (postsUsuario.length === 0) {
-        container.innerHTML = '<div style="font-size:12px; color:#777;">Nenhuma postagem neste perfil.</div>';
-        return;
-      }
-
-      postsUsuario.sort((a, b) => b.data - a.data);
-      postsUsuario.forEach(post => {
-        const autorData = todosUsuarios[post.autor] || {};
-        const isVerificado = autorData.verificado === true;
-        const avatarUrl = autorData.foto || 'https://via.placeholder.com/36/ccc/666?text=Foto';
-        const likes = post.likes || {};
-        const totalLikes = Object.keys(likes).length;
-        const euCurti = likes[usuarioAtual] === true;
-        const dateStr = new Date(post.data).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
-        const badgeVerificado = isVerificado ? '<span class="badge-verified" title="Verificado">✔</span> <span class="sparkle-icon">✨</span>' : '';
-        const classePostVerificado = isVerificado ? 'post-verified' : '';
-        const classeAvatarVerificado = isVerificado ? 'avatar-verified' : '';
-
-        const botaoExcluir = (post.autor === usuarioAtual) 
-          ? `<button class="btn-delete" onclick="window.abrirModalExclusao('${post.id}')">Excluir</button>` 
-          : '';
-
-        let midiaHTML = '';
-        if (post.midia) {
-          if (post.tipoMidia === 'video') {
-            midiaHTML = `<video src="${post.midia}" class="post-video-big" controls preload="metadata" playsinline></video>`;
-          } else {
-            midiaHTML = `<img src="${post.midia}" class="post-image-big">`;
-          }
-        }
-
-        const textoHTML = post.texto ? `<div class="post-content">${post.texto}</div>` : '';
-
-        const comentarios = post.comentarios || {};
-        let comentariosHTML = '';
-        Object.keys(comentarios).forEach(cId => {
-          const com = comentarios[cId];
-          const comAutorData = todosUsuarios[com.autor] || {};
-          const comVerificado = comAutorData.verificado === true ? '<span class="badge-verified">✔</span>' : '';
-          const comLikes = com.likes || {};
-          const totalComLikes = Object.keys(comLikes).length;
-          const euCurtiCom = comLikes[usuarioAtual] === true;
-
-          comentariosHTML += `
-            <div class="comment-item">
-              <div><strong>@${com.autor}${comVerificado}:</strong> ${com.texto}</div>
-              <div style="margin-top: 4px;">
-                <button style="font-size: 10px; padding: 2px 6px;" onclick="toggleCurtidaComentario('${post.id}', '${cId}', ${euCurtiCom})">
-                  ${euCurtiCom ? '❤️ Curtido' : '🤍 Curtir'} (${totalComLikes})
-                </button>
-              </div>
-            </div>
-          `;
-        });
-
-        const postHTML = `
-          <div class="post-box ${classePostVerificado}">
-            <div class="post-header">
-              <img class="avatar-mini ${classeAvatarVerificado}" src="${avatarUrl}">
-              <div>
-                <strong style="font-size:13px;">@${post.autor}${badgeVerificado}</strong>
-                <span style="font-size:10px; color:#666;"> - ${dateStr}</span>
-              </div>
-            </div>
-            ${textoHTML}
-            ${midiaHTML}
-            <div class="post-footer">
-              <button onclick="toggleCurtida('${post.id}', ${euCurti})">
-                ${euCurti ? '❤️ Curtido' : '🤍 Curtir'} (${totalLikes})
-              </button>
-              ${botaoExcluir}
-            </div>
-
-            <div class="comments-section">
-              <div style="font-size: 12px; font-weight: bold; margin-bottom: 5px;">Comentários:</div>
-              <div>${comentariosHTML || '<div style="font-size:11px; color:#777;">Nenhum comentário.</div>'}</div>
-              <div style="display: flex; gap: 5px; margin-top: 6px;">
-                <input type="text" id="commentInput-${post.id}" placeholder="Escreva um comentário..." style="flex: 1; font-size: 12px;">
-                <button style="font-size: 11px;" onclick="enviarComentario('${post.id}')">Comentar</button>
-              </div>
-            </div>
-          </div>
-        `;
-        container.innerHTML += postHTML;
-      });
-    }
   </script>
 </body>
 </html>
