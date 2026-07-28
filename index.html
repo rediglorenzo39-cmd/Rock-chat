@@ -207,7 +207,7 @@ input[type="text"], input[type="password"], textarea { border: 1px solid #707070
       </div>
 
       <div style="display: flex; justify-content: space-between; align-items: center;">
-        <button class="btn-photo" onclick="triggerMidiaPostUpload()">📷 / 🎥</button>
+        <button class="btn-photo" onclick="triggerMidiaPostUpload()">enviar foto ou video</button>
         <input type="file" id="postFileInput" accept="image/*,video/*" class="hidden" onchange="carregarPreviaMidiaPost(event)">
         <button id="btnPublicar" onclick="publicarPost()">Publicar no Rock Chat</button>
       </div>
@@ -251,7 +251,7 @@ input[type="text"], input[type="password"], textarea { border: 1px solid #707070
     <!-- TELA DE GRUPOS -->
     <div id="groupsView" class="hidden" style="border: 1px solid #ccc; background: #f9f9f9; padding: 15px; margin-bottom: 15px;">
       <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #8e24aa; padding-bottom: 8px; margin-bottom: 12px;">
-        <h3 style="color: #4a148c; font-size: 16px;">👥 Grupos do Rock Chat</h3>
+        <h3 style="color: #4a148c; font-size: 16px;">Grupos</h3>
         <button class="btn-group" onclick="abrirModalCriarGrupo()">+ Criar Grupo</button>
       </div>
       <div id="listaMeusGruposContainer">
@@ -369,7 +369,7 @@ input[type="text"], input[type="password"], textarea { border: 1px solid #707070
 <!-- MODAL DE ESCOLHA DE TEMA DO PERFIL -->
 <div id="modalTemasPerfil" class="modal-overlay hidden">
   <div class="modal-box" style="max-width: 350px; text-align: left;">
-    <h4 style="margin-bottom: 12px; text-align: center;">🎨 Escolher Tema do Perfil</h4>
+    <h4 style="margin-bottom: 12px; text-align: center;">Escolher Tema do Perfil</h4>
     <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 15px; max-height: 250px; overflow-y: auto;">
       <button style="padding: 10px; text-align: left; font-weight: bold;" onclick="selecionarTemaPerfil('claro')">☀️ Tema Claro (Clássico)</button>
       <button style="padding: 10px; text-align: left; font-weight: bold; background: linear-gradient(to right, #fff0f5, #ffe4e1); border-color: #ff69b4; color: #c71585;" onclick="selecionarTemaPerfil('flores')">🌸 Tema de Flores</button>
@@ -686,7 +686,7 @@ window.irParaForYou = function() {
   modoAtual = 'foryou';
   esconderTodasAsAbas();
   document.getElementById('feedView').classList.remove('hidden');
-  document.getElementById('feedTitle').innerText = "✨ For You (Em Alta na Plataforma)";
+  document.getElementById('feedTitle').innerText = "Recomendados";
   perfilAberto = null;
   renderizarFeed(todosPosts, 'feedContainer', true);
 };
@@ -1217,7 +1217,7 @@ window.retornarParaTelaDeChamada = function() {
   
   get(child(ref(db), `ligacoes/${ligacaoEmAndamentoKey}/status`)).then((snap) => {
     if (snap.val() === 'atendida') {
-      document.getElementById('callStatusText').innerText = "Ligação Ativa 📞";
+      document.getElementById('callStatusText').innerText = "Ligação Ativa";
       document.getElementById('callWritingArea').classList.remove('hidden');
     } else {
       document.getElementById('callStatusText').innerText = `Ligando para @${outroUser}...`;
