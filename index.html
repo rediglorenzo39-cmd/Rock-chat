@@ -1541,7 +1541,35 @@ window.resgatarCodigoVerificado = async function() {
   }
 };
 
-window.mostrarBusca = function() { document.getElementById('searchView').classList.toggle('hidden'); };
+window.mostrarBusca = function() { 
+  document.getElementById('searchView').classList.toggle('hidden'); 
+  document.getElementById('searchInput').focus();
+};
+
+window.buscarPerfis = function() {
+  const termo = document.getElementById('searchInput').value.trim().toLowerCase();
+  const resultadosEl = document.getElementById('searchResults');
+  resultadosEl.innerHTML = '';
+  if (!termo) return;
+  
+  let encontrados = 0;
+  Object.keys(todosUsuarios).forEach(username => {
+    if (username.includes(termo)) {
+      encontrados++;
+      const uData = todosUsuarios[username] || {};
+      const verifBadge = uData.verificado ? ' ✔' : '';
+      const avatarUrl = uData.foto || 'https://via.placeholder.com/30/ccc/666?text=Foto';
+      const div = document.createElement('div');
+      div.style.cssText = "display: flex; align-items: center; justify-content: space-between; padding: 6px; background: #fff; border: 1px solid #ddd; margin-bottom: 4px; cursor: pointer;";
+      div.innerHTML = `<div style="display: flex; align-items: center; gap: 8px;"><img src="${avatarUrl}" style="width: 24px; height: 24px; border-radius: 50%; object-fit: cover;"><strong>@${username}${verifBadge}</strong></div><button style="font-size: 11px; padding: 2px 8px;" onclick="abrirPerfil('${username}')">Ver Perfil</button>`;
+      resultadosEl.appendChild(div);
+    }
+  });
+  if (encontrados === 0) {
+    resultadosEl.innerHTML = '<div style="font-size: 12px; color: #777; padding: 5px;">Nenhum usuário encontrado.</div>';
+  }
+};
+
 window.triggerFotoUpload = function() {
   if (perfilAberto === usuarioAtual) { document.getElementById('fileInput').click(); }
 };
