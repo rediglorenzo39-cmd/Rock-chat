@@ -217,7 +217,10 @@ input[type="text"], input[type="password"], textarea { border: 1px solid #707070
         <div id="modoKidsDesativarArea" class="hidden">
           <label style="font-size: 12px; font-weight: bold; display: block; margin-bottom: 4px;">Digite a senha para desativar o Modo Kids:</label>
           <input type="password" id="senhaDesativarKidsInput" placeholder="Digite sua senha..." style="width: 100%; max-width: 250px; margin-bottom: 8px; display: block;">
-          <button class="btn-delete" style="padding: 8px 16px; font-weight: bold;" onclick="desativarModoKids()">Desativar Modo Kids</button>
+          <div style="display: flex; gap: 6px; flex-wrap: wrap; align-items: center;">
+            <button class="btn-delete" style="padding: 8px 16px; font-weight: bold;" onclick="desativarModoKids()">Desativar Modo Kids</button>
+            <button style="background: #e0e0e0; border: 1px solid #707070; padding: 8px 12px; font-size: 12px;" onclick="abrirModalEsqueceuSenhaKids()">🔑 Esqueceu a senha kids?</button>
+          </div>
         </div>
       </div>
     </div>
@@ -381,6 +384,21 @@ input[type="text"], input[type="password"], textarea { border: 1px solid #707070
       <div id="adminRequestsContainer" style="margin-top: 10px;">
         <div style="font-size: 12px; color: #777;">Carregando histórico...</div>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL DE ESQUECEU A SENHA KIDS -->
+<div id="modalEsqueceuSenhaKids" class="modal-overlay hidden">
+  <div class="modal-box" style="max-width: 350px; text-align: left;">
+    <h4 style="margin-bottom: 10px; text-align: center;">🔑 Recuperar Senha Kids</h4>
+    <p style="font-size: 12px; color: #555; margin-bottom: 10px;">Digite a senha da sua conta do Rock Chat para visualizar a senha kids:</p>
+    <label style="font-size: 12px; font-weight: bold; display: block; margin-bottom: 4px;">Senha da conta:</label>
+    <input type="password" id="senhaContaRecuperacaoInput" placeholder="Digite sua senha da conta..." style="width: 100%; margin-bottom: 12px;">
+    <div id="resultadoRecuperacaoKids" style="font-size: 12px; font-weight: bold; margin-bottom: 12px; color: #0066cc;"></div>
+    <div style="display: flex; justify-content: flex-end; gap: 8px;">
+      <button style="background: #4caf50; color: white; border: none; padding: 6px 12px; font-weight: bold;" onclick="verificarSenhaContaParaRecuperarKids()">Ver Senha</button>
+      <button onclick="fecharModalEsqueceuSenhaKids()">Fechar</button>
     </div>
   </div>
 </div>
@@ -668,7 +686,6 @@ function entrarNoApp(usuario) {
     document.getElementById('btnAdminPanel').classList.add('hidden');
   }
 
-  // Carregar estado do Modo Kids salvo no localStorage para este usuário
   const salvoKids = localStorage.getItem(`rockchat_modokids_${usuarioAtual}`);
   if (salvoKids) {
     const dadosKids = JSON.parse(salvoKids);
@@ -789,7 +806,6 @@ window.ativarModoKids = function() {
   modoKidsAtivo = true;
   senhaModoKids = senha;
   
-  // Salvar no localStorage persistente
   localStorage.setItem(`rockchat_modokids_${usuarioAtual}`, JSON.stringify({ ativo: true, senha: senha }));
   
   aplicarEstadoModoKidsUI();
@@ -812,6 +828,34 @@ window.desativarModoKids = function() {
   aplicarEstadoModoKidsUI();
   atualizarTelaConfigUI();
   alert("Modo Kids desativado com sucesso!");
+};
+
+window.abrirModalEsqueceuSenhaKids = function() {
+  document.getElementById('senhaContaRecuperacaoInput').value = '';
+  document.getElementById('resultadoRecuperacaoKids').innerText = '';
+  document.getElementById('modalEsqueceuSenhaKids').classList.remove('hidden');
+};
+
+window.fecharModalEsqueceuSenhaKids = function() {
+  document.getElementById('modalEsqueceuSenhaKids').classList.add('hidden');
+};
+
+window.verificarSenhaContaParaRecuperarKids = function() {
+  const senhaContaDigitada = document.getElementById('senhaContaRecuperacaoInput').value.trim();
+  const resultadoEl = document.getElementById('resultadoRecuperacaoKids');
+  if (!senhaContaDigitada) {
+    resultadoEl.style.color = "red";
+    resultadoEl.innerText = "Digite a senha da sua conta!";
+    return;
+  }
+  const dadosUser = todosUsuarios[usuarioAtual] || {};
+  if (senhaContaDigitada === dadosUser.senha) {
+    resultadoEl.style.color = "green";
+    resultadoEl.innerText = `Senha Kids recuperada: ${senhaModoKids}`;
+  } else {
+    resultadoEl.style.color = "red";
+    resultadoEl.innerText = "Senha da conta incorreta!";
+  }
 };
 
 function aplicarEstadoModoKidsUI() {
@@ -1455,7 +1499,7 @@ function obterChaveChat(user1, user2) { return [user1, user2].sort().join('_'); 
 
 function escutarMensagensPrivadas() {
   onValue(ref(db, 'mensagens_privadas'), (snap) => {
-    if (modoKidsAtivo) return; // Não notificar mensagens no modo kids
+    if (modoKidsAtivo) return;
     const dados = snap.val() || {};
     let ultimaMsgEncontrada = null;
     let remetenteUltimaMsg = null;
