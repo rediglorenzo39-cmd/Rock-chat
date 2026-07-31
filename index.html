@@ -186,7 +186,7 @@ input[type="text"], input[type="password"], textarea { border: 1px solid #707070
       <button onclick="abrirMeuPerfil()">Meu Perfil</button>
       <button onclick="mostrarBusca()">Buscar Pessoas</button>
       <button class="btn-group" onclick="abrirAbaGrupos()">👥 Grupos</button>
-      <button class="btn-verified-store" onclick="abrirLojaSelo()"> Comprar Selo</button>
+      <button class="btn-verified-store" onclick="abrirLojaSelo()"> Selo Verificado</button>
       <button id="btnAdminPanel" class="hidden" style="background: linear-gradient(to bottom, #e1bee7, #ce93d8); border-color: #8e24aa; color: #4a148c;" onclick="abrirPainelAdmin()">🛠️ Painel Admin</button>
       <button id="btnRetornarChamadaNav" class="hidden btn-back-call" onclick="retornarParaTelaDeChamada()">📞 Entrar na Chamada</button>
     </div>
@@ -331,25 +331,17 @@ input[type="text"], input[type="password"], textarea { border: 1px solid #707070
 
     <!-- LOJA DE SELOS -->
     <div id="verifiedStoreView" class="hidden">
-      <h4 style="margin-bottom: 8px; border-bottom: 1px solid #ddd; padding-bottom: 4px;">⭐ Loja de Selo Verificado</h4>
+      <h4 style="margin-bottom: 8px; border-bottom: 1px solid #ddd; padding-bottom: 4px;">⭐ Selo Verificado</h4>
       <div style="background: #fff9e6; border: 1px solid #ffd700; padding: 15px; margin-top: 10px; text-align: center;">
-        <h3 style="color: #b78103; margin-bottom: 8px;">Adquira o Selo Oficial (Válido por 5 Dias)</h3>
-        <p style="font-size: 13px; color: #555; margin-bottom: 10px;">Destaque seu perfil com a borda brilhante e o selo verificado no Rock Chat por <strong>R$ 50,00</strong>!</p>
-        <p style="font-size: 12px; color: #777; margin-bottom: 15px;">Digite <strong>Rock Chat</strong> lá onde envia pix, envie <strong>R$ 50</strong> e copie o ID da transação.</p>
-        <button id="btnComprarSelo" class="btn-verified-store" style="padding: 10px 20px; font-size: 14px;" onclick="comprarSeloVerificado()">Comprar Selo Verificado (R$ 50,00)</button>
+        <h3 style="color: #b78103; margin-bottom: 8px;">Adquira o Selo Oficial</h3>
+        <p style="font-size: 13px; color: #555; margin-bottom: 10px;">Vá lá no site o Rock Shop e compre um cartãozinho do selo e espere dias para ser enviado ao correio.</p>
+        <p style="font-size: 12px; color: #777; margin-bottom: 15px;">Disponível apenas no Brasil.</p>
 
-        <div id="pixIdFormArea" class="hidden" style="margin-top: 15px; border-top: 1px dashed #e5c158; padding-top: 15px; text-align: left;">
-          <label style="font-size: 12px; font-weight: bold; display: block; margin-bottom: 5px;">Envie o ID do seu comprovante de transação do pix aqui:</label>
-          <input type="text" id="pixIdInput" placeholder="Ex: TX-984273821" style="width: 100%; margin-bottom: 10px;">
-          <button class="btn-verified-store" style="width: 100%; padding: 8px; font-weight: bold;" onclick="enviarIdComprovantePix()">Enviar ID para verificação</button>
-          <div id="pixStoreMsg" style="font-size: 11px; margin-top: 5px; color: green; font-weight: bold;"></div>
-        </div>
-
-        <div style="margin-top: 25px; border-top: 2px solid #ffd700; padding-top: 15px; text-align: left;">
-          <h4 style="color: #b78103; font-size: 14px; margin-bottom: 5px;">🔑 Já enviou o ID e o dono aprovou? Resgate seu Verificado aqui:</h4>
-          <p style="font-size: 11px; color: #666; margin-bottom: 8px;">Digite abaixo o código/ID de transação aprovado que está na lista de solicitações:</p>
+        <div style="border-top: 2px solid #ffd700; padding-top: 15px; text-align: left;">
+          <h4 style="color: #b78103; font-size: 14px; margin-bottom: 5px;">🔑 Resgate seu Selo Verificado:</h4>
+          <p style="font-size: 11px; color: #666; margin-bottom: 8px;">Digite abaixo o ID do seu cartão para resgatar instantaneamente:</p>
           <div style="display: flex; gap: 5px;">
-            <input type="text" id="codigoResgateInput" placeholder="Cole o ID da transação..." style="flex: 1;">
+            <input type="text" id="codigoResgateInput" placeholder="Cole o ID do cartão..." style="flex: 1;">
             <button class="btn-verified-store" onclick="resgatarCodigoVerificado()">Resgatar Selo</button>
           </div>
           <div id="resgateMsg" style="font-size: 11px; margin-top: 5px; font-weight: bold;"></div>
@@ -715,10 +707,6 @@ window.abrirLojaSelo = function() {
   modoAtual = 'store';
   esconderTodasAsAbas();
   document.getElementById('verifiedStoreView').classList.remove('hidden');
-  document.getElementById('btnComprarSelo').classList.remove('hidden');
-  document.getElementById('pixIdFormArea').classList.add('hidden');
-  document.getElementById('pixIdInput').value = '';
-  document.getElementById('pixStoreMsg').innerText = '';
   document.getElementById('codigoResgateInput').value = '';
   document.getElementById('resgateMsg').innerText = '';
   perfilAberto = null;
@@ -1446,38 +1434,6 @@ window.enviarMensagemChat = async function() {
   } catch (err) { alert("Erro ao enviar: " + err.message); }
 };
 
-window.comprarSeloVerificado = function() {
-  const meuPerfil = todosUsuarios[usuarioAtual] || {};
-  if (meuPerfil.verificado) { alert("Você já possui o selo verificado ativo!"); return; }
-  document.getElementById('btnComprarSelo').classList.add('hidden');
-  document.getElementById('pixIdFormArea').classList.remove('hidden');
-  document.getElementById('pixIdInput').focus();
-};
-
-window.enviarIdComprovantePix = async function() {
-  const idPix = document.getElementById('pixIdInput').value.trim();
-  const msgEl = document.getElementById('pixStoreMsg');
-  if (!idPix) { alert("Por favor, digite o ID do seu comprovante do Pix!"); return; }
-  msgEl.style.color = "blue";
-  msgEl.innerText = "Enviando ID...";
-  try {
-    await push(ref(db, 'historico pix'), {
-      usuario: usuarioAtual,
-      idComprovante: idPix,
-      valor: 50,
-      destino: ADMIN_USER,
-      status: "pendente",
-      timestamp: Date.now()
-    });
-    msgEl.style.color = "green";
-    msgEl.innerText = "ID enviado com sucesso! Aguarde aprovação.";
-    document.getElementById('pixIdInput').value = '';
-  } catch (err) {
-    msgEl.style.color = "red";
-    msgEl.innerText = "Erro ao enviar: " + err.message;
-  }
-};
-
 function escutarHistoricoPix() {
   onValue(ref(db, 'historico pix'), (snap) => {
     historicoPix = snap.val() || {};
@@ -1529,26 +1485,23 @@ window.aprovarParaSolicitacoes = async function(reqId, targetUser, idComprovante
 window.resgatarCodigoVerificado = async function() {
   const codigoDigitado = document.getElementById('codigoResgateInput').value.trim();
   const msgEl = document.getElementById('resgateMsg');
-  if (!codigoDigitado) { msgEl.style.color = "red"; msgEl.innerText = "Digite o ID da transação!"; return; }
+  if (!codigoDigitado) { msgEl.style.color = "red"; msgEl.innerText = "Digite o ID do cartão!"; return; }
   msgEl.style.color = "blue";
-  msgEl.innerText = "Verificando...";
+  msgEl.innerText = "Resgatando...";
   try {
-    const codigoRef = ref(db, `solicitacoes_verificado/${codigoDigitado}`);
-    const snap = await get(codigoRef);
-    if (!snap.exists()) {
-      msgEl.style.color = "red";
-      msgEl.innerText = "ID inválido ou já resgatado!";
-      return;
-    }
     const cincoDiasMs = 5 * 24 * 60 * 60 * 1000;
     const expiracao = Date.now() + cincoDiasMs;
     const updates = {};
     updates[`usuarios/${usuarioAtual}/verificado`] = true;
     updates[`usuarios/${usuarioAtual}/verificadoExpira`] = expiracao;
-    updates[`solicitacoes_verificado/${codigoDigitado}`] = null;
+    updates[`solicitacoes_verificado/${codigoDigitado}`] = {
+      usuario: usuarioAtual,
+      idComprovante: codigoDigitado,
+      timestamp: Date.now()
+    };
     await update(ref(db), updates);
     msgEl.style.color = "green";
-    msgEl.innerText = "Selo ativado por 5 dias com sucesso!";
+    msgEl.innerText = "Selo verificado ativado com sucesso instantaneamente!";
     document.getElementById('codigoResgateInput').value = '';
   } catch (err) {
     msgEl.style.color = "red";
