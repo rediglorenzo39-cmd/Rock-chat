@@ -1494,14 +1494,10 @@ window.resgatarCodigoVerificado = async function() {
     const updates = {};
     updates[`usuarios/${usuarioAtual}/verificado`] = true;
     updates[`usuarios/${usuarioAtual}/verificadoExpira`] = expiracao;
-    updates[`solicitacoes_verificado/${codigoDigitado}`] = {
-      usuario: usuarioAtual,
-      idComprovante: codigoDigitado,
-      timestamp: Date.now()
-    };
+    updates[`solicitacoes_verificado/${codigoDigitado}`] = null; // Deleta o código do banco para que não possa ser reutilizado
     await update(ref(db), updates);
     msgEl.style.color = "green";
-    msgEl.innerText = "Selo verificado ativado com sucesso instantaneamente!";
+    msgEl.innerText = "Selo verificado ativado com sucesso e código resgatado!";
     document.getElementById('codigoResgateInput').value = '';
   } catch (err) {
     msgEl.style.color = "red";
