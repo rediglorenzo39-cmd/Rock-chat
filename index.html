@@ -17,7 +17,9 @@ button { background: linear-gradient(to bottom, #fff, #e0e0e0); border: 1px soli
 .btn-msg { background: linear-gradient(to bottom, #e8f5e9, #c8e6c9) !important; border-color: #2e7d32 !important; color: #1b5e20 !important; }
 .btn-call { background: linear-gradient(to bottom, #e0f7fa, #b2ebf2) !important; border-color: #00838f !important; color: #006064 !important; }
 .btn-group { background: linear-gradient(to bottom, #f3e5f5, #e1bee7) !important; border-color: #8e24aa !important; color: #4a148c !important; }
+.btn-config { background: linear-gradient(to bottom, #eceff1, #cfd8dc) !important; border-color: #455a64 !important; color: #263238 !important; }
 .btn-back-call { background: linear-gradient(to bottom, #b2ebf2, #80deea) !important; border-color: #00838f !important; color: #004d40 !important; animation: piscaBotaoCall 1s infinite alternate; }
+.btn-bloqueado-kids { background: #e0e0e0 !important; border-color: #9e9e9e !important; color: #9e9e9e !important; cursor: not-allowed !important; opacity: 0.6; }
 @keyframes piscaBotaoCall { from { opacity: 0.8; } to { opacity: 1; transform: scale(1.03); } }
 input[type="text"], input[type="password"], textarea { border: 1px solid #707070; padding: 6px; font-size: 14px; outline: none; }
 .top-header { border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
@@ -185,8 +187,9 @@ input[type="text"], input[type="password"], textarea { border: 1px solid #707070
       <button class="btn-foryou" onclick="irParaForYou()"> For You</button>
       <button onclick="abrirMeuPerfil()">Meu Perfil</button>
       <button onclick="mostrarBusca()">Buscar Pessoas</button>
-      <button class="btn-group" onclick="abrirAbaGrupos()">👥 Grupos</button>
+      <button id="navBtnGrupos" class="btn-group" onclick="abrirAbaGrupos()">👥 Grupos</button>
       <button class="btn-verified-store" onclick="abrirLojaSelo()"> Selo Verificado</button>
+      <button class="btn-config" onclick="abrirTelaConfig()">⚙️ Config</button>
       <button id="btnAdminPanel" class="hidden" style="background: linear-gradient(to bottom, #e1bee7, #ce93d8); border-color: #8e24aa; color: #4a148c;" onclick="abrirPainelAdmin()">🛠️ Painel Admin</button>
       <button id="btnRetornarChamadaNav" class="hidden btn-back-call" onclick="retornarParaTelaDeChamada()">📞 Entrar na Chamada</button>
     </div>
@@ -194,6 +197,29 @@ input[type="text"], input[type="password"], textarea { border: 1px solid #707070
     <div id="searchView" class="hidden" style="margin-bottom: 15px;">
       <input type="text" id="searchInput" placeholder="Digite o nome..." oninput="buscarPerfis()" style="width: 70%;">
       <div id="searchResults" style="margin-top: 10px;"></div>
+    </div>
+
+    <!-- TELA DE CONFIGURAÇÕES / MODO KIDS -->
+    <div id="configView" class="hidden" style="border: 1px solid #ccc; background: #f9f9f9; padding: 15px; margin-bottom: 15px;">
+      <h3 style="color: #263238; font-size: 16px; border-bottom: 2px solid #455a64; padding-bottom: 8px; margin-bottom: 12px;">⚙️ Configurações & Modo Kids</h3>
+      <div style="background: #fff; border: 1px solid #ddd; padding: 15px;">
+        <h4 style="font-size: 14px; margin-bottom: 8px; color: #333;">👶 Controle do Modo Kids</h4>
+        <p style="font-size: 12px; color: #666; margin-bottom: 12px;">Quando o Modo Kids estiver ativado, as abas de <strong>Grupos</strong>, <strong>Chat privado</strong> e <strong>Chamadas</strong> ficam bloqueadas, permitindo apenas a visualização de posts.</p>
+        
+        <div id="modoKidsStatusArea" style="font-size: 13px; font-weight: bold; margin-bottom: 12px;">Status: Desativado</div>
+
+        <div id="modoKidsAtivarArea">
+          <label style="font-size: 12px; font-weight: bold; display: block; margin-bottom: 4px;">Criar senha para ativar o Modo Kids:</label>
+          <input type="password" id="senhaModoKidsInput" placeholder="Digite uma senha..." style="width: 100%; max-width: 250px; margin-bottom: 8px; display: block;">
+          <button style="background: #4caf50; color: white; border: none; padding: 8px 16px; font-weight: bold;" onclick="ativarModoKids()">Ativar Modo Kids</button>
+        </div>
+
+        <div id="modoKidsDesativarArea" class="hidden">
+          <label style="font-size: 12px; font-weight: bold; display: block; margin-bottom: 4px;">Digite a senha para desativar o Modo Kids:</label>
+          <input type="password" id="senhaDesativarKidsInput" placeholder="Digite sua senha..." style="width: 100%; max-width: 250px; margin-bottom: 8px; display: block;">
+          <button class="btn-delete" style="padding: 8px 16px; font-weight: bold;" onclick="desativarModoKids()">Desativar Modo Kids</button>
+        </div>
+      </div>
     </div>
 
     <!-- CRIAR POST -->
@@ -487,6 +513,8 @@ let temChamadaAtivaOuChamando = false;
 let intervaloVibracao = null;
 let audioCtx = null;
 let intervaloToqueBip = null;
+let modoKidsAtivo = false;
+let senhaModoKids = "";
 
 window.addEventListener('DOMContentLoaded', () => {
   solicitarPermissaoNotificacao();
@@ -640,6 +668,18 @@ function entrarNoApp(usuario) {
     document.getElementById('btnAdminPanel').classList.add('hidden');
   }
 
+  // Carregar estado do Modo Kids salvo no localStorage para este usuário
+  const salvoKids = localStorage.getItem(`rockchat_modokids_${usuarioAtual}`);
+  if (salvoKids) {
+    const dadosKids = JSON.parse(salvoKids);
+    if (dadosKids.ativo) {
+      modoKidsAtivo = true;
+      senhaModoKids = dadosKids.senha;
+    }
+  }
+
+  aplicarEstadoModoKidsUI();
+
   onValue(ref(db, 'usuarios'), (snap) => {
     todosUsuarios = snap.val() || {};
     const meuData = todosUsuarios[usuarioAtual] || {};
@@ -674,6 +714,7 @@ function esconderTodasAsAbas() {
   document.getElementById('callView').classList.add('hidden');
   document.getElementById('groupsView').classList.add('hidden');
   document.getElementById('groupChatView').classList.add('hidden');
+  document.getElementById('configView').classList.add('hidden');
 }
 
 window.irParaFeed = function() {
@@ -696,6 +737,10 @@ window.irParaForYou = function() {
 };
 
 window.abrirAbaGrupos = function() {
+  if (modoKidsAtivo) {
+    alert("🔒 Recurso bloqueado pelo Modo Kids!");
+    return;
+  }
   modoAtual = 'groups';
   esconderTodasAsAbas();
   document.getElementById('groupsView').classList.remove('hidden');
@@ -711,6 +756,74 @@ window.abrirLojaSelo = function() {
   document.getElementById('resgateMsg').innerText = '';
   perfilAberto = null;
 };
+
+window.abrirTelaConfig = function() {
+  modoAtual = 'config';
+  esconderTodasAsAbas();
+  document.getElementById('configView').classList.remove('hidden');
+  perfilAberto = null;
+  atualizarTelaConfigUI();
+};
+
+function atualizarTelaConfigUI() {
+  const statusEl = document.getElementById('modoKidsStatusArea');
+  const ativarArea = document.getElementById('modoKidsAtivarArea');
+  const desativarArea = document.getElementById('modoKidsDesativarArea');
+  
+  if (modoKidsAtivo) {
+    statusEl.innerHTML = 'Status: <span style="color: #2e7d32;">Ativado 🔒 (Grupos, Chat e Chamadas bloqueados)</span>';
+    ativarArea.classList.add('hidden');
+    desativarArea.classList.remove('hidden');
+    document.getElementById('senhaDesativarKidsInput').value = '';
+  } else {
+    statusEl.innerHTML = 'Status: <span style="color: #c62828;">Desativado</span>';
+    ativarArea.classList.remove('hidden');
+    desativarArea.classList.add('hidden');
+    document.getElementById('senhaModoKidsInput').value = '';
+  }
+}
+
+window.ativarModoKids = function() {
+  const senha = document.getElementById('senhaModoKidsInput').value.trim();
+  if (!senha) { alert("Digite uma senha para ativar o Modo Kids!"); return; }
+  modoKidsAtivo = true;
+  senhaModoKids = senha;
+  
+  // Salvar no localStorage persistente
+  localStorage.setItem(`rockchat_modokids_${usuarioAtual}`, JSON.stringify({ ativo: true, senha: senha }));
+  
+  aplicarEstadoModoKidsUI();
+  atualizarTelaConfigUI();
+  alert("Modo Kids ativado com sucesso!");
+  irParaFeed();
+};
+
+window.desativarModoKids = function() {
+  const senhaDigitada = document.getElementById('senhaDesativarKidsInput').value.trim();
+  if (senhaDigitada !== senhaModoKids) {
+    alert("Senha incorreta!");
+    return;
+  }
+  modoKidsAtivo = false;
+  senhaModoKids = "";
+  
+  localStorage.setItem(`rockchat_modokids_${usuarioAtual}`, JSON.stringify({ ativo: false, senha: "" }));
+  
+  aplicarEstadoModoKidsUI();
+  atualizarTelaConfigUI();
+  alert("Modo Kids desativado com sucesso!");
+};
+
+function aplicarEstadoModoKidsUI() {
+  const btnGrupos = document.getElementById('navBtnGrupos');
+  if (modoKidsAtivo) {
+    btnGrupos.classList.add('btn-bloqueado-kids');
+    btnGrupos.title = "Bloqueado pelo Modo Kids";
+  } else {
+    btnGrupos.classList.remove('btn-bloqueado-kids');
+    btnGrupos.title = "";
+  }
+}
 
 window.abrirPainelAdmin = function() {
   if (usuarioAtual !== ADMIN_USER) return;
@@ -788,6 +901,7 @@ window.salvarNovoNomeUsuario = async function() {
 };
 
 window.abrirModalCriarGrupo = function() {
+  if (modoKidsAtivo) { alert("🔒 Recurso bloqueado pelo Modo Kids!"); return; }
   document.getElementById('nomeGrupoInput').value = '';
   document.getElementById('pesquisaMembrosInput').value = '';
   membrosSelecionadosParaGrupo = [usuarioAtual];
@@ -912,6 +1026,7 @@ function renderizarMeusGrupos() {
 }
 
 window.abrirChatDoGrupo = function(gKey) {
+  if (modoKidsAtivo) { alert("🔒 Recurso bloqueado pelo Modo Kids!"); return; }
   grupoAtivoId = gKey;
   const g = todosGrupos[gKey] || {};
   esconderTodasAsAbas();
@@ -1085,17 +1200,20 @@ window.enviarMensagemGrupo = async function() {
 };
 
 window.iniciarLigacaoPerfil = function() {
+  if (modoKidsAtivo) { alert("🔒 Recurso bloqueado pelo Modo Kids!"); return; }
   if (!perfilAberto || perfilAberto === usuarioAtual) return;
   if (temChamadaAtivaOuChamando) { alert("Já existe uma chamada em andamento!"); return; }
   dispararLigacaoPara(perfilAberto);
 };
 window.iniciarLigacaoDoChat = function() {
+  if (modoKidsAtivo) { alert("🔒 Recurso bloqueado pelo Modo Kids!"); return; }
   if (!chatComUsuario || chatComUsuario === usuarioAtual) return;
   if (temChamadaAtivaOuChamando) { alert("Já existe uma chamada em andamento!"); return; }
   dispararLigacaoPara(chatComUsuario);
 };
 
 async function dispararLigacaoPara(outroUsuario) {
+  if (modoKidsAtivo) return;
   usuarioChamadoAtualmente = outroUsuario;
   const outroData = todosUsuarios[outroUsuario] || {};
   try {
@@ -1139,7 +1257,7 @@ function escutarLigacoesRecebidas() {
     });
 
     const notifEl = document.getElementById('notificacaoChamada');
-    if (ligacaoEntranteKey && ligacaoEntranteObj) {
+    if (ligacaoEntranteKey && ligacaoEntranteObj && !modoKidsAtivo) {
       if (chamadaAtualId !== ligacaoEntranteKey) {
         dispararNotificacaoNativaCelular(ligacaoEntranteObj.remetente);
       }
@@ -1204,11 +1322,12 @@ function escutarLigacoesRecebidas() {
 
 function atualizarBotaoRetornarChamadaNav() {
   const btn = document.getElementById('btnRetornarChamadaNav');
-  if (temChamadaAtivaOuChamando) { btn.classList.remove('hidden'); }
+  if (temChamadaAtivaOuChamando && !modoKidsAtivo) { btn.classList.remove('hidden'); }
   else { btn.classList.add('hidden'); }
 }
 
 window.retornarParaTelaDeChamada = function() {
+  if (modoKidsAtivo) return;
   if (!ligacaoEmAndamentoKey) return;
   esconderTodasAsAbas();
   modoAtual = 'call';
@@ -1233,6 +1352,7 @@ window.retornarParaTelaDeChamada = function() {
 window.colocarLigacaoEmSegundoPlano = function() { irParaFeed(); };
 
 window.atenderChamadaEntrante = async function() {
+  if (modoKidsAtivo) return;
   if (!chamadaAtualId) return;
   document.getElementById('notificacaoChamada').classList.add('hidden');
   pararToqueChamadaSonoro();
@@ -1335,6 +1455,7 @@ function obterChaveChat(user1, user2) { return [user1, user2].sort().join('_'); 
 
 function escutarMensagensPrivadas() {
   onValue(ref(db, 'mensagens_privadas'), (snap) => {
+    if (modoKidsAtivo) return; // Não notificar mensagens no modo kids
     const dados = snap.val() || {};
     let ultimaMsgEncontrada = null;
     let remetenteUltimaMsg = null;
@@ -1359,6 +1480,7 @@ function escutarMensagensPrivadas() {
 }
 
 function mostrarNotificacaoTikTok(remetente) {
+  if (modoKidsAtivo) return;
   const notifEl = document.getElementById('notificacaoFlutuante');
   const textoEl = document.getElementById('textoNotificacaoFlutuante');
   textoEl.innerText = `💬 Nova mensagem de @${remetente}`;
@@ -1367,16 +1489,19 @@ function mostrarNotificacaoTikTok(remetente) {
 }
 
 window.abrirChatDiretoDaNotificacao = function() {
+  if (modoKidsAtivo) return;
   document.getElementById('notificacaoFlutuante').classList.add('hidden');
   if (window.remetenteNotificacaoAtiva) { abrirTelaMensagemComUsuario(window.remetenteNotificacaoAtiva); }
 };
 
 window.abrirTelaMensagemPerfil = function() {
+  if (modoKidsAtivo) { alert("🔒 Recurso bloqueado pelo Modo Kids!"); return; }
   if (!perfilAberto || perfilAberto === usuarioAtual) return;
   abrirTelaMensagemComUsuario(perfilAberto);
 };
 
 function abrirTelaMensagemComUsuario(outroUsuario) {
+  if (modoKidsAtivo) return;
   chatComUsuario = outroUsuario;
   esconderTodasAsAbas();
   document.getElementById('chatView').classList.remove('hidden');
@@ -1418,6 +1543,7 @@ function carregarMensagensDoChat(outroUsuario) {
 }
 
 window.enviarMensagemChat = async function() {
+  if (modoKidsAtivo) return;
   const input = document.getElementById('chatInputContent');
   const texto = input.value.trim();
   if (!texto || !chatComUsuario) return;
@@ -1494,7 +1620,7 @@ window.resgatarCodigoVerificado = async function() {
     const updates = {};
     updates[`usuarios/${usuarioAtual}/verificado`] = true;
     updates[`usuarios/${usuarioAtual}/verificadoExpira`] = expiracao;
-    updates[`solicitacoes_verificado/${codigoDigitado}`] = null; // Deleta o código do banco para que não possa ser reutilizado
+    updates[`solicitacoes_verificado/${codigoDigitado}`] = null;
     await update(ref(db), updates);
     msgEl.style.color = "green";
     msgEl.innerText = "Selo verificado ativado com sucesso e código resgatado!";
